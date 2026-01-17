@@ -1,5 +1,0 @@
-//register
-
-//login
-
-//log out?

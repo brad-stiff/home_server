@@ -1,6 +1,10 @@
 import { Tabs } from 'expo-router';
 
 import Ionicons from '@expo/vector-icons/Ionicons';
+//ionicons for movie library
+//logo-amazon
+//disc
+//document = hard drive?
 
 
 export default function TabLayout() {
@@ -33,6 +37,24 @@ export default function TabLayout() {
           title: 'About',
           tabBarIcon: ({ color, focused }) => (
             <Ionicons name={focused ? 'information-circle' : 'information-circle-outline'} color={color} size={24}/>
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="movies"
+        options={{
+          title: 'Movies',
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? 'film' : 'film-outline'} color={color} size={24}/>
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="games"
+        options={{
+          title: 'Games',
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? 'game-controller' : 'game-controller-outline'} color={color} size={24}/>
           ),
         }}
       />

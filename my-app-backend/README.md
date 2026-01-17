@@ -4,7 +4,7 @@
 
 1. install
    ```bash
-   npm install express mysql2 cors body-parser
+   npm install
    ```
 2. start the app
    ```bash
