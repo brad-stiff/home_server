@@ -1,0 +1,5 @@
+# Bruno ignore file - patterns to ignore when committing
+environments/*.bru
+**/secrets.bru
+**/*key*.bru
+**/*token*.bru

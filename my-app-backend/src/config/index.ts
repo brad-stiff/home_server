@@ -7,7 +7,8 @@ if (env_found.error) {
 }
 export default {
   app: {
-    access_token_secret: process.env.ACCESS_TOKEN_SECRET
+    access_token_secret: process.env.ACCESS_TOKEN_SECRET,
+    the_movie_db_api_key: process.env.TMDB_API_KEY
   },
   db: {
     host: process.env.MYSQL_HOST,
