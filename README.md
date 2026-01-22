@@ -1,6 +1,11 @@
-# Movie Library App
+# Home Server App
 
-A full-stack movie library application that allows users to browse, search, and manage their personal movie collection using The Movie Database (TMDB) API.
+A full-stack home server application featuring a movie library and basic games. Built as a centralized entertainment and media hub for home networks.
+
+## Current Features
+
+- 🎬 **Movie Library**: Browse, search, and manage your personal movie collection using The Movie Database (TMDB) API
+- 🎮 **Basic Games**: Simple games for entertainment
 
 ## Tech Stack
 
@@ -18,29 +23,36 @@ A full-stack movie library application that allows users to browse, search, and 
 ## Project Structure
 
 ```
-react-test/
-├── my-app/                 # React Native frontend
+/
+├── my-app/                 # React Native frontend (Expo)
 │   ├── app/
-│   ├── components/
-│   ├── services/
+│   │   ├── (tabs)/         # App screens/tabs
+│   │   │   └── movies.tsx      # Movie library interface
+│   │   │   └── games.tsx       # Games interface
+│   │   ├── components/     # Reusable UI components
+│   │   └── services/       # API services
 │   └── ...
-├── my-app-backend/         # Node.js backend
+├── my-app-backend/         # Node.js backend server
 │   ├── src/
-│   │   ├── controllers/
-│   │   ├── db/
-│   │   ├── routes/
-│   │   └── services/
+│   │   ├── controllers/    # Route controllers
+│   │   ├── db/             # Database layer
+│   │   │   ├── sql/        # SQL queries
+│   │   │   └── migrations/ # Database migrations
+│   │   ├── routes/         # API routes
+│   │   └── services/       # External service integrations
 │   └── ...
 └── README.md
 ```
 
 ## Getting Started
 
+This home server application provides a centralized platform for entertainment and media management on your local network. Currently features a movie library and basic games, with a modular architecture for easy expansion.
+
 ### Prerequisites
 - Node.js (v18 or higher)
 - npm or yarn
 - MySQL database
-- TMDB API key
+- TMDB API key (for movie features)
 
 ### Backend Setup
 
@@ -91,21 +103,40 @@ react-test/
 
 ## Features
 
-- 🔍 **Movie Search**: Search TMDB for movies to add to your library
-- 📚 **Personal Library**: View and manage your movie collection
-- 🎬 **Movie Details**: Detailed information for each movie
-- 🏷️ **Genre Support**: Movies are tagged with genres from TMDB
-- 🔄 **Real-time Sorting**: Sort movies by title or release date
-- 📱 **Responsive Design**: Optimized for mobile devices
+### Movie Library Module
+- 🔍 **Movie Search**: Search The Movie Database (TMDB) for movies to add to your library
+- 📚 **Personal Library**: View and manage your movie collection with persistent storage
+- 🎬 **Movie Details**: Detailed information including cast, crew, and descriptions
+- 🏷️ **Genre Support**: Automatic genre tagging from TMDB with visual sorting
+- 🔄 **Smart Sorting**: Sort by title (ascending/descending) or release date
+- 📱 **Mobile-First Design**: Optimized interface for tablets and phones
 
-## API Endpoints
+### Games Module
+- 🎮 **Basic Games**: Simple entertainment games
+- 🔄 **Extensible Architecture**: Easy to add new games and features
 
-### Movies
+### Platform Features
+- 🏠 **Home Server**: Designed to run on local home networks
+- 📡 **API-Driven**: RESTful API backend with modular architecture
+- 💾 **Persistent Storage**: MySQL database for data persistence
+- 🔧 **Modular Design**: Easy to add new apps and features
+
+## API Architecture
+
+The backend provides a RESTful API with modular endpoints for different features:
+
+### Movies Module
 - `GET /api/movies/library` - Get user's movie library
 - `POST /api/movies/library` - Add movie to library
-- `GET /api/movies/search?q=query` - Search movies
-- `GET /api/movies/:id` - Get movie details
-- `GET /api/movies/genres/list` - Get available genres
+- `GET /api/movies/search?q=query` - Search TMDB movies
+- `GET /api/movies/:id` - Get detailed movie information
+- `GET /api/movies/genres/list` - Get available movie genres
+
+### Extensible Design
+The API is designed with modularity in mind. New features and modules can be added by:
+- Creating new route files in `/routes/`
+- Adding corresponding controllers
+- Extending the database schema as needed
 
 ## Database Schema
 
@@ -128,6 +159,23 @@ The application uses MySQL with the following main tables:
 - `npm start` - Start Expo development server
 - `npm run ios` - Run on iOS simulator
 - `npm run android` - Run on Android emulator
+
+## Future Development
+
+This home server platform is designed for expansion. Potential modules to add:
+- 📺 **TV Shows**: Series tracking and episode management
+- 🎵 **Music Library**: Personal music collection management
+- 📖 **Book Tracker**: Reading list and progress tracking
+- 📊 **Usage Analytics**: View statistics and recommendations
+- 👥 **Multi-user Support**: Family accounts and sharing
+- 📱 **Mobile Apps**: Native apps for different platforms
+
+### Adding New Modules
+
+1. **Backend**: Create new routes and controllers following the existing pattern
+2. **Database**: Add migrations for new data models
+3. **Frontend**: Add new screens/tabs in the React Native app
+4. **API**: Extend the API service layer for new endpoints
 
 ## Contributing
 
