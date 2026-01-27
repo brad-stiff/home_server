@@ -10,7 +10,9 @@ import {
   Modal,
   ScrollView,
   Image,
-  TouchableOpacity
+  TouchableOpacity,
+  Share,
+  Alert
 } from 'react-native';
 
 import { Ionicons } from '@expo/vector-icons';
@@ -65,12 +67,64 @@ type TMDBMovie = {
 type SortOption = 'title' | 'release_date';
 type SortDirection = 'asc' | 'desc' | null;
 
+// Analytics Chart Component
+const AnalyticsChart = ({ movies }: { movies: MovieTile[] }) => {
+  // Count movies by release year
+  const yearCounts: Record<number, number> = {};
+  movies.forEach(movie => {
+    const year = parseInt(movie.year);
+    if (!isNaN(year)) {
+      yearCounts[year] = (yearCounts[year] || 0) + 1;
+    }
+  });
+
+  // Get sorted years and max count for scaling
+  const sortedYears = Object.keys(yearCounts)
+    .map(Number)
+    .sort((a, b) => a - b);
+
+  const maxCount = Math.max(...Object.values(yearCounts), 1);
+
+  if (sortedYears.length === 0) {
+    return (
+      <View style={styles.noDataContainer}>
+        <Text style={styles.noDataText}>No movie data available</Text>
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.chartWrapper}>
+      {sortedYears.map(year => {
+        const count = yearCounts[year];
+        const barHeight = (count / maxCount) * 150; // Max height of 150
+
+        return (
+          <View key={year} style={styles.barContainer}>
+            <View style={styles.barWrapper}>
+              <View
+                style={[
+                  styles.bar,
+                  { height: barHeight }
+                ]}
+              />
+              <Text style={styles.barValue}>{count}</Text>
+            </View>
+            <Text style={styles.barLabel}>{year}</Text>
+          </View>
+        );
+      })}
+    </View>
+  );
+};
+
 export default function MoviesScreen() {
   const [search_query, setSearchQuery] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedMovie, setSelectedMovie] = useState<MovieDetails | null>(null);
   const [loading, setLoading] = useState(false);
   const [addMovieModalVisible, setAddMovieModalVisible] = useState(false);
+  const [analyticsModalVisible, setAnalyticsModalVisible] = useState(false);
   const [userMovies, setUserMovies] = useState<MovieTile[]>([]);
   const [libraryLoading, setLibraryLoading] = useState(true);
   const [genreMap, setGenreMap] = useState<Record<number, string>>({});
@@ -306,6 +360,46 @@ export default function MoviesScreen() {
     </Pressable>
   );
 
+  // Export movie library function
+  const exportMovieLibrary = async () => {
+    try {
+      // Sort movies by title
+      const sortedMovies = [...userMovies].sort((a, b) => a.title.localeCompare(b.title));
+
+      // Create CSV content
+      const csvHeader = 'Title,Release Year\n';
+      const csvRows = sortedMovies.map(movie =>
+        `"${movie.title.replace(/"/g, '""')}",${movie.year}`
+      ).join('\n');
+
+      const csvContent = csvHeader + csvRows;
+
+      if (Platform.OS === 'web') {
+        // For web, create a downloadable file
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `movie_library_${new Date().toISOString().split('T')[0]}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        URL.revokeObjectURL(url);
+      } else {
+        // For mobile, use Share API with data URL
+        await Share.share({
+          title: 'Movie Library Export',
+          message: `My movie library (${sortedMovies.length} movies)\n\n${csvContent}`,
+        });
+      }
+    } catch (error) {
+      console.error('Export failed:', error);
+      Alert.alert('Export Failed', 'Unable to export movie library. Please try again.');
+    }
+  };
+
   // Sort button handlers
   const handleTitleSort = () => {
     if (titleSort === null) {
@@ -396,6 +490,18 @@ export default function MoviesScreen() {
           onPress={() => setAddMovieModalVisible(true)}
         >
           <Ionicons name="add" size={24} color="#fff" />
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.analyticsButton}
+          onPress={() => setAnalyticsModalVisible(true)}
+        >
+          <Ionicons name="bar-chart" size={24} color="#fff" />
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.exportButton}
+          onPress={() => exportMovieLibrary()}
+        >
+          <Ionicons name="download" size={24} color="#fff" />
         </TouchableOpacity>
       </View>
       {libraryLoading ? (
@@ -615,6 +721,36 @@ export default function MoviesScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* Analytics Modal */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={analyticsModalVisible}
+        onRequestClose={() => setAnalyticsModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.analyticsModalContent}>
+            <Text style={styles.analyticsModalTitle}>Movie Analytics</Text>
+            <Text style={styles.analyticsSubtitle}>Movies by Release Year</Text>
+
+            <ScrollView
+              style={styles.chartContainer}
+              horizontal={true}
+              showsHorizontalScrollIndicator={true}
+            >
+              <AnalyticsChart movies={userMovies} />
+            </ScrollView>
+
+            <TouchableOpacity
+              style={styles.analyticsCloseButton}
+              onPress={() => setAnalyticsModalVisible(false)}
+            >
+              <Text style={styles.closeButtonText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -646,8 +782,8 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
   },
   sortButtonActive: {
-    backgroundColor: '#007bff',
-    borderColor: '#007bff',
+    backgroundColor: '#0D6EFD',
+    borderColor: '#0D6EFD',
   },
   list: {
     padding: 8,
@@ -663,6 +799,26 @@ const styles = StyleSheet.create({
     height: 44,
   },
   addButton: {
+    backgroundColor: '#198754',
+    padding: 10,
+    borderRadius: 8,
+    marginLeft: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 44,
+    height: 44,
+  },
+  analyticsButton: {
+    backgroundColor: '#0D6EFD',
+    padding: 10,
+    borderRadius: 8,
+    marginLeft: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 44,
+    height: 44,
+  },
+  exportButton: {
     backgroundColor: '#198754',
     padding: 10,
     borderRadius: 8,
@@ -836,7 +992,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   closeButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#0D6EFD',
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 8,
@@ -850,13 +1006,94 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 
+  // Analytics Modal Styles
+  analyticsModalContent: {
+    backgroundColor: '#25292e',
+    borderRadius: 12,
+    padding: 20,
+    width: '95%',
+    maxWidth: 700,
+    maxHeight: '85%',
+    borderWidth: 2,
+    borderColor: '#444',
+  },
+  analyticsModalTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#fff',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  analyticsSubtitle: {
+    fontSize: 16,
+    color: '#ccc',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  chartContainer: {
+    maxHeight: 350,
+    marginBottom: 20,
+  },
+  chartWrapper: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'flex-start',
+    paddingVertical: 20,
+    paddingHorizontal: 10,
+    minHeight: 200,
+    minWidth: '100%',
+  },
+  barContainer: {
+    alignItems: 'center',
+    minWidth: 32,
+    marginHorizontal: 2,
+  },
+  barWrapper: {
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  bar: {
+    width: 24,
+    backgroundColor: '#007bff',
+    borderRadius: 4,
+    minHeight: 10,
+  },
+  barValue: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: 'bold',
+    position: 'absolute',
+    top: -18,
+  },
+  barLabel: {
+    color: '#ccc',
+    fontSize: 10,
+    textAlign: 'center',
+  },
+  noDataContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 40,
+  },
+  noDataText: {
+    color: '#ccc',
+    fontSize: 16,
+  },
+  analyticsCloseButton: {
+    backgroundColor: '#0D6EFD',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+
   // Add Movie Modal Styles
   addMovieModalContent: {
     backgroundColor: '#25292e',
     borderRadius: 12,
     padding: 24,
-    width: '80%',
-    maxWidth: 300,
+    width: '85%',
+    maxWidth: 450,
     alignItems: 'center',
     borderWidth: 2,
     borderColor: '#444',
@@ -876,7 +1113,7 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   addMovieCloseButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#0D6EFD',
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 8,
@@ -974,7 +1211,7 @@ const styles = StyleSheet.create({
     lineHeight: 16,
   },
   addMovieButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#198754',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 6,

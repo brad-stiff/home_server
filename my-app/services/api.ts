@@ -1,5 +1,7 @@
 // API Configuration
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3001/api';
+import Constants from 'expo-constants';
+
+const API_BASE_URL = Constants.expoConfig?.extra?.api_url;
 
 const API_ENDPOINTS = {
   MOVIES: {
@@ -8,6 +10,12 @@ const API_ENDPOINTS = {
     DETAILS: (id: number) => `${API_BASE_URL}/movies/${id}`,
     GENRES: `${API_BASE_URL}/movies/genres/list`,
   },
+  USERS: {
+    ME: `${API_BASE_URL}/users/me`,
+    REGISTER: ``,
+    LOGIN: `${API_BASE_URL}/users/login`,
+    LOGOUT: ``
+  }
 } as const;
 
 // API Response Types
@@ -32,6 +40,7 @@ class ApiService {
     }
   }
 
+  //movies
   static async getMoviesLibrary(): Promise<ApiResponse<any[]>> {
     return this.request(API_ENDPOINTS.MOVIES.LIBRARY);
   }
@@ -55,6 +64,17 @@ class ApiService {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ tmdb_id: tmdbId }),
+    });
+  }
+
+  //user
+  static async login(email: string, password: string): Promise<ApiResponse<{messages: string[]}>> {
+    return this.request(API_ENDPOINTS.USERS.LOGIN, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email: email, password: password})
     });
   }
 }

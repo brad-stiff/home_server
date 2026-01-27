@@ -6,6 +6,25 @@ import type {
   UserRegisterRequest } from "../../types/user"
 
 //getUser
+export function getUser(id: number) {
+  console.log(id, typeof id);
+  return selectQuery<User>(`
+    SELECT
+      u.id,
+      u.active,
+      u.user_level,
+      u.email,
+      u.first_name,
+      u.last_name,
+      u.avatar_img_data,
+      u.created_at,
+      u.updated_at
+    FROM
+      user u
+    WHERE
+      u.id = ?;
+  `, [id]);
+}
 
 //getUsers
 export function getUsers(users_request: UserRequest) {

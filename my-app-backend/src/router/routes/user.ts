@@ -3,6 +3,8 @@ import db from '../../db'
 import bcrypt from 'bcrypt'
 import { validateRegister } from '../../validators/user'
 
+import { authenticateToken, AuthRequest } from '../middleware/auth';
+
 import jwt from 'jsonwebtoken'
 
 import config from '../../config'
@@ -11,14 +13,50 @@ const router = Router();
 
 // router.get('/') //get all users
 
-// router.get('/:id') //get one
+router.get('/me', authenticateToken, async(req: AuthRequest, res, next) => {
+  try {
+    console.log(req.user);
+    const user_id = req.user!.id;
+    console.log('/me user id', user_id, req.user)
 
-router.get('/user_levels', async (req, res) => {
+    const found_users = await db.user.getUser(user_id);
+    console.log('found_users', found_users);
+
+    if (!found_users || found_users.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const user = found_users[0];
+    return res.status(200).json({ user });
+
+  } catch (error) {
+    next(error);
+  }
+})
+
+// router.get('/:id') //get one
+router.get('/:id', async (req, res, next) => {
+  const { id } = req.params;
+  try {
+    const found_users = await db.user.getUser(Number(id))
+
+    if (found_users.length !== 1) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    return res.status(200).json({ user: found_users[0] });
+
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.get('/user_levels', async (req, res, next) => {
   try {
     const user_levels = await db.user.getUserLevels();
-    res.json(user_levels)
+    res.status(200).json(user_levels)
   } catch (error) {
-    res.status(500).json({ error: 'Internal server error'})
+    next(error);
   }
 });
 
@@ -53,7 +91,6 @@ router.post('/register', async (req, res, next) => {
   }
 });
 
-//what happens if already logged in?
 router.post('/login', async (req, res, next) => {
   try {
     const validation = validateRegister(req.body);
@@ -64,12 +101,16 @@ router.post('/login', async (req, res, next) => {
     const { email, password } = validation.data;
 
     const existing_user_password_hash = await db.user.getUserPasswordHash(email);
-    if (existing_user_password_hash.length === 0) {
+    const found_users = await db.user.getUsers({ email_search_str: email, exact_match: 1})
+    console.log('found users', found_users)
+    if (existing_user_password_hash.length === 0 || !found_users ||found_users.length !== 1) {
       return res.status(400).json({ errors: ['Cannot find user'] });
     }
     if (await bcrypt.compare(password, existing_user_password_hash[0].password_hash)) {
-      const access_token = jwt.sign({ email: email}, config.app.access_token_secret)
-      return res.status(200).json({ messages: ['Success!', access_token] });
+      const logged_in_user = found_users[0]
+      console.log('logged_in_user', logged_in_user)
+      const access_token = jwt.sign({ id: logged_in_user.id, email: logged_in_user.email}, config.app.access_token_secret)
+      return res.status(200).json({ messages: ['Success!', access_token] }); //change object shape
     } else {
       return res.status(400).json({ errors: ['Incorrect credentials'] });
     }
@@ -78,9 +119,7 @@ router.post('/login', async (req, res, next) => {
   }
 })
 
-function authenticateToken(req, res, next) {
-  const auth_header = req.headers['authorization']
-  const token = auth_header && auth_header.split(' ')[1]
-}
+//logout
+//FUTURE - will be needed when implementing refresh tokens
 
 export default router;

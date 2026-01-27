@@ -27,7 +27,7 @@ A full-stack home server application featuring a movie library and basic games. 
 ├── my-app/                 # React Native frontend (Expo)
 │   ├── app/
 │   │   ├── (tabs)/         # App screens/tabs
-│   │   │   └── movies.tsx      # Movie library interface
+│   │   │   ├── movies.tsx      # Movie library interface
 │   │   │   └── games.tsx       # Games interface
 │   │   ├── components/     # Reusable UI components
 │   │   └── services/       # API services

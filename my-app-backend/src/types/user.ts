@@ -1,7 +1,7 @@
 export type User = {
   id: number
   active: 0 | 1
-  user_level: 'admin' | 'basic'
+  user_level: UserLevel['id']
   email: string
   first_name: null | string
   last_name: null | string
