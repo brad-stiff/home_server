@@ -1,56 +1,13 @@
 import axios, { AxiosResponse } from 'axios';
 import config from '../config';
 
+import type {
+  TMDBMovieDetails,
+  TMDBSearchResponse
+} from '../types/movie'
+
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 const TMDB_API_KEY = config.app.the_movie_db_api_key;
-
-export interface TMDBMovie {
-  id: number;
-  title: string;
-  overview: string;
-  poster_path: string | null;
-  backdrop_path: string | null;
-  release_date: string;
-  vote_average: number;
-  vote_count: number;
-  genre_ids: number[];
-  adult: boolean;
-  original_language: string;
-  original_title: string;
-  popularity: number;
-  video: boolean;
-}
-
-export interface TMDBMovieDetails extends TMDBMovie {
-  genres: Array<{ id: number; name: string }>;
-  runtime: number | null;
-  budget: number;
-  revenue: number;
-  status: string;
-  tagline: string | null;
-  production_companies: Array<{
-    id: number;
-    name: string;
-    logo_path: string | null;
-    origin_country: string;
-  }>;
-  production_countries: Array<{
-    iso_3166_1: string;
-    name: string;
-  }>;
-  spoken_languages: Array<{
-    english_name: string;
-    iso_639_1: string;
-    name: string;
-  }>;
-}
-
-export interface TMDBSearchResponse {
-  page: number;
-  results: TMDBMovie[];
-  total_pages: number;
-  total_results: number;
-}
 
 class TMDBService {
   private api = axios.create({

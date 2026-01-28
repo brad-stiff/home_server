@@ -26,5 +26,5 @@ export type UserLevel = {
 
 export type UserRegisterRequest = {
   email: string
-  password_hash: string
+  password: string
 }

@@ -1,13 +1,13 @@
-import { Request, Response } from 'express';
-import TMDBService from '../services/tmdb';
-import db from '../db';
-import type { MovieInsertRequest } from '../db/sql/movies';
+import { Request, Response, NextFunction } from 'express';
+import TMDBService from '../../services/tmdb';
+import db from '../../db';
+import type { MovieInsertRequest } from '../../types/movie';
 
 export class MoviesController {
   /**
    * Get user's movie library
    */
-  async getUserLibrary(req: Request, res: Response): Promise<void> {
+  async getUserLibrary(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       // Movies are now global - not tied to specific users
       const movies = await db.movies.getMovies();
@@ -18,16 +18,14 @@ export class MoviesController {
       });
     } catch (error) {
       console.error('Error in getUserLibrary:', error);
-      res.status(500).json({
-        error: 'Failed to fetch user movie library'
-      });
+      next(error)
     }
   }
 
   /**
    * Add movie to user's library
    */
-  async addToLibrary(req: Request, res: Response): Promise<void> {
+  async addToLibrary(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { tmdb_id } = req.body;
 
@@ -62,16 +60,14 @@ export class MoviesController {
       });
     } catch (error) {
       console.error('Error in addToLibrary:', error);
-      res.status(500).json({
-        error: 'Failed to add movie to library'
-      });
+      next(error);
     }
   }
 
   /**
    * Remove movie from user's library
    */
-  async removeFromLibrary(req: Request, res: Response): Promise<void> {
+  async removeFromLibrary(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { id } = req.params;
 
@@ -99,16 +95,14 @@ export class MoviesController {
       });
     } catch (error) {
       console.error('Error in removeFromLibrary:', error);
-      res.status(500).json({
-        error: 'Failed to remove movie from library'
-      });
+      next(error);
     }
   }
 
   /**
    * Search for movies
    */
-  async searchMovies(req: Request, res: Response): Promise<void> {
+  async searchMovies(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { q: query, page = 1 } = req.query;
 
@@ -128,16 +122,14 @@ export class MoviesController {
       });
     } catch (error) {
       console.error('Error in searchMovies:', error);
-      res.status(500).json({
-        error: 'Failed to search movies'
-      });
+      next(error);
     }
   }
 
   /**
    * Get popular movies
    */
-  async getPopularMovies(req: Request, res: Response): Promise<void> {
+  async getPopularMovies(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { page = 1 } = req.query;
       const pageNumber = parseInt(page as string, 10) || 1;
@@ -150,16 +142,14 @@ export class MoviesController {
       });
     } catch (error) {
       console.error('Error in getPopularMovies:', error);
-      res.status(500).json({
-        error: 'Failed to fetch popular movies'
-      });
+      next(error);
     }
   }
 
   /**
    * Get top rated movies
    */
-  async getTopRatedMovies(req: Request, res: Response): Promise<void> {
+  async getTopRatedMovies(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { page = 1 } = req.query;
       const pageNumber = parseInt(page as string, 10) || 1;
@@ -172,16 +162,14 @@ export class MoviesController {
       });
     } catch (error) {
       console.error('Error in getTopRatedMovies:', error);
-      res.status(500).json({
-        error: 'Failed to fetch top rated movies'
-      });
+      next(error);
     }
   }
 
   /**
    * Get now playing movies
    */
-  async getNowPlayingMovies(req: Request, res: Response): Promise<void> {
+  async getNowPlayingMovies(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { page = 1 } = req.query;
       const pageNumber = parseInt(page as string, 10) || 1;
@@ -194,16 +182,14 @@ export class MoviesController {
       });
     } catch (error) {
       console.error('Error in getNowPlayingMovies:', error);
-      res.status(500).json({
-        error: 'Failed to fetch now playing movies'
-      });
+      next(error);
     }
   }
 
   /**
    * Get upcoming movies
    */
-  async getUpcomingMovies(req: Request, res: Response): Promise<void> {
+  async getUpcomingMovies(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { page = 1 } = req.query;
       const pageNumber = parseInt(page as string, 10) || 1;
@@ -216,16 +202,14 @@ export class MoviesController {
       });
     } catch (error) {
       console.error('Error in getUpcomingMovies:', error);
-      res.status(500).json({
-        error: 'Failed to fetch upcoming movies'
-      });
+      next(error);
     }
   }
 
   /**
    * Get movie details by ID
    */
-  async getMovieDetails(req: Request, res: Response): Promise<void> {
+  async getMovieDetails(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { id } = req.params;
 
@@ -252,16 +236,14 @@ export class MoviesController {
       });
     } catch (error) {
       console.error('Error in getMovieDetails:', error);
-      res.status(500).json({
-        error: 'Failed to fetch movie details'
-      });
+      next(error);
     }
   }
 
   /**
    * Get movie images
    */
-  async getMovieImages(req: Request, res: Response): Promise<void> {
+  async getMovieImages(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { id } = req.params;
 
@@ -288,16 +270,14 @@ export class MoviesController {
       });
     } catch (error) {
       console.error('Error in getMovieImages:', error);
-      res.status(500).json({
-        error: 'Failed to fetch movie images'
-      });
+      next(error);
     }
   }
 
   /**
    * Get movie credits (cast and crew)
    */
-  async getMovieCredits(req: Request, res: Response): Promise<void> {
+  async getMovieCredits(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { id } = req.params;
 
@@ -324,16 +304,14 @@ export class MoviesController {
       });
     } catch (error) {
       console.error('Error in getMovieCredits:', error);
-      res.status(500).json({
-        error: 'Failed to fetch movie credits'
-      });
+      next(error);
     }
   }
 
   /**
    * Get similar movies
    */
-  async getSimilarMovies(req: Request, res: Response): Promise<void> {
+  async getSimilarMovies(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { id } = req.params;
       const { page = 1 } = req.query;
@@ -362,16 +340,14 @@ export class MoviesController {
       });
     } catch (error) {
       console.error('Error in getSimilarMovies:', error);
-      res.status(500).json({
-        error: 'Failed to fetch similar movies'
-      });
+      next(error);
     }
   }
 
   /**
    * Get movie recommendations
    */
-  async getMovieRecommendations(req: Request, res: Response): Promise<void> {
+  async getMovieRecommendations(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { id } = req.params;
       const { page = 1 } = req.query;
@@ -400,16 +376,14 @@ export class MoviesController {
       });
     } catch (error) {
       console.error('Error in getMovieRecommendations:', error);
-      res.status(500).json({
-        error: 'Failed to fetch movie recommendations'
-      });
+      next(error);
     }
   }
 
   /**
    * Get movie genres
    */
-  async getGenres(req: Request, res: Response): Promise<void> {
+  async getGenres(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const genres = await TMDBService.getGenres();
 
@@ -419,9 +393,7 @@ export class MoviesController {
       });
     } catch (error) {
       console.error('Error in getGenres:', error);
-      res.status(500).json({
-        error: 'Failed to fetch genres'
-      });
+      next(error);
     }
   }
 }

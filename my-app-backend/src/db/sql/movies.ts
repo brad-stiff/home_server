@@ -1,23 +1,6 @@
-import { selectQuery, modifyQuery } from "../util";
+import { selectQuery } from "../util";
 import { get } from "../../loaders/mysql";
-import type { Movie } from "../../types/movie";
-
-export interface MovieRequest {
-  tmdb_id?: number;
-  active?: number;
-  exact_match?: number;
-}
-
-export interface MovieInsertRequest {
-  tmdb_id: number;
-  title: string;
-  release_date?: string;
-  poster_path?: string;
-  backdrop_path?: string;
-  overview?: string;
-  added_at?: Date;
-  genre_ids?: number[];
-}
+import type { Movie, MovieInsertRequest } from "../../types/movie";
 
 export async function getMovies() {
   const results = await selectQuery<Movie & { genre_ids?: number[] }>(`

@@ -1,9 +1,6 @@
-export type RegisterBody = {
-  email: string;
-  password: string;
-};
+import type { UserRegisterRequest } from "../../types/user"
 
-export function validateRegister(body: unknown): { data: RegisterBody } | { errors: string[] } {
+export function validateRegister(body: unknown): { data: UserRegisterRequest } | { errors: string[] } {
   const errors: string[] = [];
 
   if (!body || typeof body !== 'object') {
