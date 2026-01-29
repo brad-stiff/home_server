@@ -1,196 +1,92 @@
 import {
-  StyleSheet,
-  Text,
   View,
+  Text,
   FlatList,
-  Pressable,
-  Dimensions,
-  TextInput,
   Platform,
-  Modal,
-  ScrollView,
-  Image,
-  TouchableOpacity,
+  Alert,
   Share,
-  Alert
+  StyleSheet
 } from 'react-native';
-
-import { Ionicons } from '@expo/vector-icons';
 import { useState, useEffect } from 'react';
-import ApiService from '../../services/api';
-
-// API Configuration - Consider moving to a separate config file
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3001/api';
-
-const { width } = Dimensions.get('window');
-const number_of_columns = 4;
-const tile_size = width / number_of_columns - 32;
-
-type MovieTile = {
-  id: string;
-  title: string;
-  year: string;
-  genre: string;
-  hex_color: string;
-  onPress: () => void;
-  poster_bg: string; // Fallback background color
-  poster_path: string | null; // TMDB poster path
-  tmdb_id: number; // TMDB movie ID for API calls
-};
-
-type MovieDetails = {
-  id: number;
-  title: string;
-  overview: string;
-  poster_path: string | null;
-  backdrop_path: string | null;
-  release_date: string;
-  vote_average: number;
-  vote_count: number;
-  genres: Array<{ id: number; name: string }>;
-  runtime: number | null;
-  status: string;
-  tagline: string | null;
-};
-
-
-type TMDBMovie = {
-  id: number;
-  title: string;
-  poster_path: string | null;
-  backdrop_path: string | null;
-  release_date: string;
-  overview: string;
-  vote_average: number;
-};
-
-type SortOption = 'title' | 'release_date';
-type SortDirection = 'asc' | 'desc' | null;
-
-// Analytics Chart Component
-const AnalyticsChart = ({ movies }: { movies: MovieTile[] }) => {
-  // Count movies by release year
-  const yearCounts: Record<number, number> = {};
-  movies.forEach(movie => {
-    const year = parseInt(movie.year);
-    if (!isNaN(year)) {
-      yearCounts[year] = (yearCounts[year] || 0) + 1;
-    }
-  });
-
-  // Get sorted years and max count for scaling
-  const sortedYears = Object.keys(yearCounts)
-    .map(Number)
-    .sort((a, b) => a - b);
-
-  const maxCount = Math.max(...Object.values(yearCounts), 1);
-
-  if (sortedYears.length === 0) {
-    return (
-      <View style={styles.noDataContainer}>
-        <Text style={styles.noDataText}>No movie data available</Text>
-      </View>
-    );
-  }
-
-  return (
-    <View style={styles.chartWrapper}>
-      {sortedYears.map(year => {
-        const count = yearCounts[year];
-        const barHeight = (count / maxCount) * 150; // Max height of 150
-
-        return (
-          <View key={year} style={styles.barContainer}>
-            <View style={styles.barWrapper}>
-              <View
-                style={[
-                  styles.bar,
-                  { height: barHeight }
-                ]}
-              />
-              <Text style={styles.barValue}>{count}</Text>
-            </View>
-            <Text style={styles.barLabel}>{year}</Text>
-          </View>
-        );
-      })}
-    </View>
-  );
-};
+import ApiService from '@/services/api';
+import HeaderControls from '@/components/movie/HeaderControls';
+import MovieTileComponent from '@/components/movie/MovieTile';
+import MovieDetailsModal from '@/components/movie/MovieDetailsModal';
+import AddMovieModal from '@/components/movie/AddMovieModal';
+import AnalyticsModal from '@/components/movie/AnalyticsModal';
+import { MovieTile, MovieDetails, TMDBMovie, SortDirection } from '@/app/types/movie';
 
 export default function MoviesScreen() {
+  // Search + sorting
   const [search_query, setSearchQuery] = useState('');
-  const [modalVisible, setModalVisible] = useState(false);
-  const [selectedMovie, setSelectedMovie] = useState<MovieDetails | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [addMovieModalVisible, setAddMovieModalVisible] = useState(false);
-  const [analyticsModalVisible, setAnalyticsModalVisible] = useState(false);
-  const [userMovies, setUserMovies] = useState<MovieTile[]>([]);
-  const [libraryLoading, setLibraryLoading] = useState(true);
-  const [genreMap, setGenreMap] = useState<Record<number, string>>({});
+  const [title_sort, setTitleSort] = useState<SortDirection>('asc');
+  const [release_date_sort, setReleaseDateSort] = useState<SortDirection>(null);
 
-  // Sort states - default is title ascending
-  const [titleSort, setTitleSort] = useState<SortDirection>('asc');
-  const [releaseDateSort, setReleaseDateSort] = useState<SortDirection>(null);
+  // Modals
+  const [modal_visible, setModalVisible] = useState(false);
+  const [add_movie_modal_visible, setAddMovieModalVisible] = useState(false);
+  const [analytics_modal_visible, setAnalyticsModalVisible] = useState(false);
 
-  // Load genres mapping
-  const loadGenres = async (): Promise<Record<number, string>> => {
+  // Movie data
+  const [selected_movie, setSelectedMovie] = useState<MovieDetails | null>(null);
+  const [user_movies, setUserMovies] = useState<MovieTile[]>([]);
+  const [library_loading, setLibraryLoading] = useState(true);
+  const [genre_map, setGenreMap] = useState<Record<number, string>>({});
+
+  // Add movie modal state
+  const [movie_search_query, setMovieSearchQuery] = useState('');
+  const [search_results, setSearchResults] = useState<TMDBMovie[]>([]);
+  const [search_loading, setSearchLoading] = useState(false);
+  const [adding_movie, setAddingMovie] = useState<number | null>(null);
+
+  // Load genres
+  const loadGenres = async () => {
     try {
       const data = await ApiService.getGenres();
-      if (data.success && data.data && data.data.genres) {
-        const genreMapping: Record<number, string> = {};
-        data.data.genres.forEach((genre: { id: number; name: string }) => {
-          genreMapping[genre.id] = genre.name;
-        });
-        setGenreMap(genreMapping);
-        return genreMapping;
+      if (data.success && data.data?.genres) {
+        const map: Record<number, string> = {};
+        data.data.genres.forEach((g: any) => (map[g.id] = g.name));
+        setGenreMap(map);
+        return map;
       }
-    } catch (error) {
-      console.error('Failed to load genres:', error);
+    } catch (err) {
+      console.error('Failed to load genres:', err);
     }
     return {};
   };
 
-  // Add movie modal states
-  const [movieSearchQuery, setMovieSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<TMDBMovie[]>([]);
-  const [searchLoading, setSearchLoading] = useState(false);
-  const [addingMovie, setAddingMovie] = useState<number | null>(null);
-  const [searchTimeout, setSearchTimeout] = useState<ReturnType<typeof setTimeout> | null>(null);
-
-  // Load genres and user's movie library on component mount
+  // Load library
   useEffect(() => {
     const loadData = async () => {
-      // Load genres first and get the mapping directly
-      const genreMapping = await loadGenres();
+      const genre_mapping = await loadGenres();
 
       try {
         const data = await ApiService.getMoviesLibrary();
-
         if (data.success && data.data) {
-          // Convert database movies to MovieTile format
-          const libraryMovies: MovieTile[] = data.data.map((movie: any) => {
-            // Map genre_ids to genre names, fallback to 'Personal Collection'
-            const genreNames = movie.genre_ids?.map((id: number) => genreMapping[id]).filter(Boolean) || [];
-            const genre = genreNames.length > 0 ? genreNames.join(', ') : 'Personal Collection';
+          const mapped = data.data.map((movie: any) => {
+            const genre_names =
+              movie.genre_ids?.map((id: number) => genre_mapping[id]).filter(Boolean) || [];
+            const genre = genre_names.length ? genre_names.join(', ') : 'Personal Collection';
 
             return {
               id: `user-${movie.id}`,
               title: movie.title,
-              year: movie.release_date ? new Date(movie.release_date).getFullYear().toString() : new Date().getFullYear().toString(),
+              year: movie.release_date
+                ? new Date(movie.release_date).getFullYear().toString()
+                : new Date().getFullYear().toString(),
               genre,
-              hex_color: '#007AFF', // Different color for user movies
+              hex_color: '#007AFF',
               onPress: () => {},
               poster_bg: '#1a4a8a',
               poster_path: movie.poster_path,
-              tmdb_id: movie.tmdb_id,
+              tmdb_id: movie.tmdb_id
             };
           });
 
-          setUserMovies(libraryMovies);
+          setUserMovies(mapped);
         }
-      } catch (error) {
-        console.error('Error loading user library:', error);
+      } catch (err) {
+        console.error('Error loading library:', err);
       } finally {
         setLibraryLoading(false);
       }
@@ -199,24 +95,20 @@ export default function MoviesScreen() {
     loadData();
   }, []);
 
-  const fetchMovieDetails = async (movieId: number) => {
+  // Fetch movie details
+  const fetchMovieDetails = async (movie_id: number) => {
     try {
-      setLoading(true);
-      const data = await ApiService.getMovieDetails(movieId);
-
+      const data = await ApiService.getMovieDetails(movie_id);
       if (data.success && data.data) {
         setSelectedMovie(data.data);
         setModalVisible(true);
-      } else {
-        console.error('API error:', data.error);
       }
-    } catch (error) {
-      console.error('Error fetching movie details:', error);
-    } finally {
-      setLoading(false);
+    } catch (err) {
+      console.error('Error fetching movie details:', err);
     }
   };
 
+  // TMDB search
   const searchTMDBMovies = async (query: string) => {
     if (!query.trim()) {
       setSearchResults([]);
@@ -226,534 +118,214 @@ export default function MoviesScreen() {
     try {
       setSearchLoading(true);
       const data = await ApiService.searchMovies(query);
-      const rawResults = data.success && data.data && data.data.results ? data.data.results : [];
+      const raw = data.success && data.data?.results ? data.data.results : [];
 
-      // Sanitize TMDB data to prevent React Native rendering errors
-      const sanitizedResults = rawResults.map((movie: any) => ({
+      const sanitized = raw.map((movie: any) => ({
         id: Number(movie.id) || 0,
         title: String(movie.title || 'Unknown Title'),
         poster_path: movie.poster_path ? String(movie.poster_path) : null,
         backdrop_path: movie.backdrop_path ? String(movie.backdrop_path) : null,
         release_date: movie.release_date ? String(movie.release_date) : '',
         overview: String(movie.overview || ''),
-        vote_average: Number(movie.vote_average) || 0,
+        vote_average: Number(movie.vote_average) || 0
       }));
 
-      setSearchResults(sanitizedResults);
-    } catch (error) {
-      console.error('Error searching TMDB:', error);
-      setSearchResults([]);
+      setSearchResults(sanitized);
+    } catch (err) {
+      console.error('Error searching TMDB:', err);
     } finally {
       setSearchLoading(false);
     }
   };
 
-  const addMovieToLibrary = async (tmdbMovie: TMDBMovie) => {
+  // Add movie
+  const addMovieToLibrary = async (tmdb_movie: TMDBMovie) => {
     try {
-      setAddingMovie(tmdbMovie.id);
+      setAddingMovie(tmdb_movie.id);
 
-      // First check if movie already exists in library
-      const checkData = await ApiService.getMoviesLibrary();
-      if (checkData.success && checkData.data) {
-        const movieExists = checkData.data.some((movie: any) => movie.tmdb_id === tmdbMovie.id);
-        if (movieExists) {
-          alert(`"${tmdbMovie.title}" is already in your library!`);
+      const check = await ApiService.getMoviesLibrary();
+      if (check.success && check.data) {
+        const exists = check.data.some((m: any) => m.tmdb_id === tmdb_movie.id);
+        if (exists) {
+          alert(`"${tmdb_movie.title}" is already in your library!`);
           return;
         }
       }
 
-      // Movie doesn't exist, proceed with adding it
-      const data = await ApiService.addMovieToLibrary(tmdbMovie.id);
+      const data = await ApiService.addMovieToLibrary(tmdb_movie.id);
 
       if (data.success) {
-        // Refresh the user's movie library with proper genre mapping
-        const libraryData = await ApiService.getMoviesLibrary();
-        if (libraryData.success && libraryData.data) {
-            const libraryMovies: MovieTile[] = libraryData.data.map((movie: any) => {
-              // Map genre_ids to genre names, fallback to 'Personal Collection'
-              const genreNames = movie.genre_ids?.map((id: number) => genreMap[id]).filter(Boolean) || [];
-              const genre = genreNames.length > 0 ? genreNames.join(', ') : 'Personal Collection';
+        const library_data = await ApiService.getMoviesLibrary();
+        if (library_data.success && library_data.data) {
+          const mapped = library_data.data.map((movie: any) => {
+            const genre_names =
+              movie.genre_ids?.map((id: number) => genre_map[id]).filter(Boolean) || [];
+            const genre = genre_names.length ? genre_names.join(', ') : 'Personal Collection';
 
-              return {
-                id: `user-${movie.id}`,
-                title: movie.title,
-                year: movie.release_date ? new Date(movie.release_date).getFullYear().toString() : new Date().getFullYear().toString(),
-                genre,
-                hex_color: '#007AFF',
-                onPress: () => {},
-                poster_bg: '#1a4a8a',
-                poster_path: movie.poster_path,
-                tmdb_id: movie.tmdb_id,
-              };
-            });
-            setUserMovies(libraryMovies);
-          }
-        // Close the add movie modal
+            return {
+              id: `user-${movie.id}`,
+              title: movie.title,
+              year: movie.release_date
+                ? new Date(movie.release_date).getFullYear().toString()
+                : new Date().getFullYear().toString(),
+              genre,
+              hex_color: '#007AFF',
+              onPress: () => {},
+              poster_bg: '#1a4a8a',
+              poster_path: movie.poster_path,
+              tmdb_id: movie.tmdb_id
+            };
+          });
+
+          setUserMovies(mapped);
+        }
+
         setAddMovieModalVisible(false);
         setMovieSearchQuery('');
         setSearchResults([]);
       }
-    } catch (error) {
-      console.error('Error adding movie:', error);
-      alert('Failed to add movie to library');
+    } catch (err) {
+      console.error('Error adding movie:', err);
+      Alert.alert('Error', 'Failed to add movie.');
     } finally {
       setAddingMovie(null);
     }
   };
 
-  // Use only movies from the database
-  const allMovies = [...userMovies];
+  // Sorting
+  const handleTitleSort = () => {
+    if (title_sort === null) setTitleSort('asc');
+    else if (title_sort === 'asc') setTitleSort('desc');
+    else setTitleSort('asc');
 
-  const filtered_tiles = allMovies
-    .filter((tile) =>
-      tile.title.toLowerCase().includes(search_query.toLowerCase()) ||
-      tile.genre.toLowerCase().includes(search_query.toLowerCase()) ||
-      tile.year.includes(search_query)
-    )
-    .sort((a, b) => {
-      // Apply sorting based on active sort option
-      if (titleSort) {
-        const comparison = a.title.localeCompare(b.title);
-        return titleSort === 'asc' ? comparison : -comparison;
-      } else if (releaseDateSort) {
-        const aYear = parseInt(a.year) || 0;
-        const bYear = parseInt(b.year) || 0;
-        const comparison = aYear - bYear;
-        return releaseDateSort === 'asc' ? comparison : -comparison;
-      }
-      // Default: no sorting (maintain current order)
-      return 0;
-    });
-
-  const handleTilePress = (item: MovieTile) => {
-    // On web, blur any focused element before navigating to avoid aria-hidden warning
-    if (Platform.OS === 'web' && document.activeElement instanceof HTMLElement) {
-      document.activeElement.blur();
-    }
-    fetchMovieDetails(item.tmdb_id);
+    setReleaseDateSort(null);
   };
 
-  const renderItem = ({ item }: { item: MovieTile }) => (
-    <Pressable
-      style={({ pressed }) => [
-        styles.tile,
-        pressed && styles.tilePressed
-      ]}
-      onPress={() => handleTilePress(item)}
-    >
-      {item.poster_path ? (
-        <Image
-          source={{
-            uri: `https://image.tmdb.org/t/p/w342${item.poster_path}`
-          }}
-          style={styles.tileImage}
-          resizeMode="cover"
-        />
-      ) : (
-        <View style={[styles.tileFallback, { backgroundColor: item.poster_bg }]} />
-      )}
-      <View style={styles.posterOverlay}>
-        <Text style={styles.movieTitle}>{item.title}</Text>
-        <Text style={styles.movieYear}>{item.year}</Text>
-        <Text style={styles.movieGenre}>{item.genre}</Text>
-      </View>
-    </Pressable>
-  );
+  const handleReleaseDateSort = () => {
+    if (release_date_sort === null) setReleaseDateSort('asc');
+    else if (release_date_sort === 'asc') setReleaseDateSort('desc');
+    else setReleaseDateSort('asc');
 
-  // Export movie library function
+    setTitleSort(null);
+  };
+
+  // Export CSV
   const exportMovieLibrary = async () => {
     try {
-      // Sort movies by title
-      const sortedMovies = [...userMovies].sort((a, b) => a.title.localeCompare(b.title));
-
-      // Create CSV content
-      const csvHeader = 'Title,Release Year\n';
-      const csvRows = sortedMovies.map(movie =>
-        `"${movie.title.replace(/"/g, '""')}",${movie.year}`
-      ).join('\n');
-
-      const csvContent = csvHeader + csvRows;
+      const sorted = [...user_movies].sort((a, b) => a.title.localeCompare(b.title));
+      const csv_header = 'Title,Release Year\n';
+      const csv_rows = sorted
+        .map((m) => `"${m.title.replace(/"/g, '""')}",${m.year}`)
+        .join('\n');
+      const csv_content = csv_header + csv_rows;
 
       if (Platform.OS === 'web') {
-        // For web, create a downloadable file
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const blob = new Blob([csv_content], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);
-
         const link = document.createElement('a');
         link.href = url;
         link.download = `movie_library_${new Date().toISOString().split('T')[0]}.csv`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-
         URL.revokeObjectURL(url);
       } else {
-        // For mobile, use Share API with data URL
         await Share.share({
           title: 'Movie Library Export',
-          message: `My movie library (${sortedMovies.length} movies)\n\n${csvContent}`,
+          message: csv_content
         });
       }
-    } catch (error) {
-      console.error('Export failed:', error);
-      Alert.alert('Export Failed', 'Unable to export movie library. Please try again.');
+    } catch (err) {
+      console.error('Export failed:', err);
+      Alert.alert('Export Failed', 'Unable to export movie library.');
     }
   };
 
-  // Sort button handlers
-  const handleTitleSort = () => {
-    if (titleSort === null) {
-      // Activate title ascending, deactivate release date
-      setTitleSort('asc');
-      setReleaseDateSort(null);
-    } else if (titleSort === 'asc') {
-      // Toggle to descending
-      setTitleSort('desc');
-      setReleaseDateSort(null);
-    } else if (titleSort === 'desc') {
-      // If release date is active, can clear title (switch to release date only)
-      if (releaseDateSort !== null) {
-        setTitleSort(null);
-        // Keep release date active
-      } else {
-        // If release date is not active, cycle back to ascending
-        setTitleSort('asc');
-        setReleaseDateSort(null);
+  // Filter + sort
+  const filtered_movies = [...user_movies]
+    .filter((m) =>
+      m.title.toLowerCase().includes(search_query.toLowerCase()) ||
+      m.genre.toLowerCase().includes(search_query.toLowerCase()) ||
+      m.year.includes(search_query)
+    )
+    .sort((a, b) => {
+      if (title_sort) {
+        const cmp = a.title.localeCompare(b.title);
+        return title_sort === 'asc' ? cmp : -cmp;
       }
-    }
-  };
+      if (release_date_sort) {
+        const cmp = parseInt(a.year) - parseInt(b.year);
+        return release_date_sort === 'asc' ? cmp : -cmp;
+      }
+      return 0;
+    });
 
-  const handleReleaseDateSort = () => {
-    if (releaseDateSort === null) {
-      // Activate release date ascending, deactivate title
-      setReleaseDateSort('asc');
-      setTitleSort(null);
-    } else if (releaseDateSort === 'asc') {
-      // Toggle to descending
-      setReleaseDateSort('desc');
-      setTitleSort(null);
-    } else if (releaseDateSort === 'desc') {
-      // If title is active, can clear release date (switch to title only)
-      if (titleSort !== null) {
-        setReleaseDateSort(null);
-        // Keep title active
-      } else {
-        // If title is not active, cycle back to ascending
-        setReleaseDateSort('asc');
-        setTitleSort(null);
-      }
-    }
-  };
+  const renderItem = ({ item }: { item: MovieTile }) => (
+    <MovieTileComponent item={item} onPress={() => fetchMovieDetails(item.tmdb_id)} />
+  );
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={[styles.sortButton, titleSort && styles.sortButtonActive]}
-          onPress={handleTitleSort}
-        >
-          <Ionicons
-            name={
-              titleSort === 'asc' ? 'text' :
-              titleSort === 'desc' ? 'text-outline' :
-              'text'
-            }
-            size={16}
-            color={titleSort ? '#fff' : '#666'}
-          />
-          {titleSort === 'asc' && <Ionicons name="arrow-down" size={12} color="#fff" />}
-          {titleSort === 'desc' && <Ionicons name="arrow-up" size={12} color="#fff" />}
-        </TouchableOpacity>
+      <HeaderControls
+        search_query={search_query}
+        setSearchQuery={setSearchQuery}
+        title_sort={title_sort}
+        release_date_sort={release_date_sort}
+        onTitleSort={handleTitleSort}
+        onReleaseDateSort={handleReleaseDateSort}
+        onAddMovie={() => setAddMovieModalVisible(true)}
+        onOpenAnalytics={() => setAnalyticsModalVisible(true)}
+        onExport={exportMovieLibrary}
+      />
 
-        <TouchableOpacity
-          style={[styles.sortButton, releaseDateSort && styles.sortButtonActive]}
-          onPress={handleReleaseDateSort}
-        >
-          <Ionicons
-            name="calendar"
-            size={16}
-            color={releaseDateSort ? '#fff' : '#666'}
-          />
-          {releaseDateSort === 'asc' && <Ionicons name="arrow-down" size={12} color="#fff" />}
-          {releaseDateSort === 'desc' && <Ionicons name="arrow-up" size={12} color="#fff" />}
-        </TouchableOpacity>
-
-        <TextInput
-          style={styles.searchBar}
-          placeholder="Search movies..."
-          value={search_query}
-          onChangeText={setSearchQuery}
-          placeholderTextColor="#888"
-        />
-        <TouchableOpacity
-          style={styles.addButton}
-          onPress={() => setAddMovieModalVisible(true)}
-        >
-          <Ionicons name="add" size={24} color="#fff" />
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.analyticsButton}
-          onPress={() => setAnalyticsModalVisible(true)}
-        >
-          <Ionicons name="bar-chart" size={24} color="#fff" />
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.exportButton}
-          onPress={() => exportMovieLibrary()}
-        >
-          <Ionicons name="download" size={24} color="#fff" />
-        </TouchableOpacity>
-      </View>
-      {libraryLoading ? (
-        <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>Loading your movie library...</Text>
-        </View>
-      ) : filtered_tiles.length === 0 ? (
+      {library_loading ? (
+        <Text style={styles.loadingText}>Loading your movie library...</Text>
+      ) : filtered_movies.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <Ionicons name="film" size={64} color="#666" />
           <Text style={styles.emptyTitle}>No movies in your library</Text>
-          <Text style={styles.emptyText}>Tap the + button to add your first movie!</Text>
+          <Text style={styles.emptyText}>Tap + to add your first movie</Text>
         </View>
       ) : (
         <FlatList
-          data={filtered_tiles}
+          data={filtered_movies}
           renderItem={renderItem}
           keyExtractor={(item) => item.id}
-          numColumns={number_of_columns}
+          numColumns={4}
           contentContainerStyle={styles.list}
         />
       )}
 
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <ScrollView contentContainerStyle={styles.modalScrollContent}>
-              {selectedMovie && (
-                <>
-                  {/* Movie Poster/Backdrop */}
-                  {selectedMovie.backdrop_path && (
-                    <Image
-                      source={{
-                        uri: `https://image.tmdb.org/t/p/w500${selectedMovie.backdrop_path}`
-                      }}
-                      style={styles.movieBackdrop}
-                      resizeMode="cover"
-                    />
-                  )}
+      <MovieDetailsModal
+        visible={modal_visible}
+        movie={selected_movie}
+        onClose={() => setModalVisible(false)}
+      />
 
-                  {/* Movie Title and Basic Info */}
-                  <View style={styles.movieHeader}>
-                    <Text style={styles.modalTitle}>{selectedMovie.title}</Text>
-                    {selectedMovie.tagline && (
-                      <Text style={styles.movieTagline}>"{selectedMovie.tagline}"</Text>
-                    )}
-                    <View style={styles.movieMeta}>
-                      <Text style={styles.movieYearModal}>
-                        {new Date(selectedMovie.release_date).getFullYear()}
-                      </Text>
-                      {selectedMovie.runtime && (
-                        <Text style={styles.movieRuntime}>
-                          • {Math.floor(selectedMovie.runtime / 60)}h {selectedMovie.runtime % 60}m
-                        </Text>
-                      )}
-                      <Text style={styles.movieRating}>
-                        • ⭐ {selectedMovie.vote_average.toFixed(1)} ({selectedMovie.vote_count} votes)
-                      </Text>
-                    </View>
-                    <Text style={styles.movieGenres}>
-                      {selectedMovie.genres.map(genre => genre.name).join(', ')}
-                    </Text>
-                  </View>
-
-                  {/* Movie Overview */}
-                  <View style={styles.movieOverview}>
-                    <Text style={styles.overviewTitle}>Overview</Text>
-                    <Text style={styles.overviewText}>
-                      {selectedMovie.overview || 'No overview available.'}
-                    </Text>
-                  </View>
-
-                  {/* Additional Info */}
-                  <View style={styles.movieDetails}>
-                    <Text style={styles.detailsTitle}>Details</Text>
-                    <View style={styles.detailRow}>
-                      <Text style={styles.detailLabel}>Status:</Text>
-                      <Text style={styles.detailValue}>{selectedMovie.status}</Text>
-                    </View>
-                    <View style={styles.detailRow}>
-                      <Text style={styles.detailLabel}>Release Date:</Text>
-                      <Text style={styles.detailValue}>
-                        {new Date(selectedMovie.release_date).toLocaleDateString()}
-                      </Text>
-                    </View>
-                  </View>
-                </>
-              )}
-
-              {/* Close Button */}
-              <Pressable
-                style={styles.closeButton}
-                onPress={() => setModalVisible(false)}
-              >
-                <Text style={styles.closeButtonText}>Close</Text>
-              </Pressable>
-            </ScrollView>
-          </View>
-        </View>
-      </Modal>
-
-      <Modal
-        animationType="fade"
-        transparent={true}
-        visible={addMovieModalVisible}
-        onRequestClose={() => {
+      <AddMovieModal
+        visible={add_movie_modal_visible}
+        search_query={movie_search_query}
+        setSearchQuery={setMovieSearchQuery}
+        search_results={search_results}
+        search_loading={search_loading}
+        adding_movie={adding_movie}
+        onSearch={searchTMDBMovies}
+        onAddMovie={addMovieToLibrary}
+        onClose={() => {
           setAddMovieModalVisible(false);
           setMovieSearchQuery('');
           setSearchResults([]);
-          if (searchTimeout) {
-            clearTimeout(searchTimeout);
-            setSearchTimeout(null);
-          }
         }}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.addMovieModalContent}>
-            <Text style={styles.addMovieModalTitle}>Add Movie to Library</Text>
+      />
 
-            {/* Search Bar */}
-            <TextInput
-              style={styles.movieSearchInput}
-              placeholder="Search for movies..."
-              value={movieSearchQuery}
-              onChangeText={(text) => {
-                setMovieSearchQuery(text);
-
-                // Clear existing timeout
-                if (searchTimeout) {
-                  clearTimeout(searchTimeout);
-                }
-
-                // Set new timeout for debounced search
-                const newTimeout = setTimeout(() => {
-                  searchTMDBMovies(text);
-                }, 500);
-
-                setSearchTimeout(newTimeout);
-              }}
-              placeholderTextColor="#888"
-            />
-
-            {/* Search Results */}
-            {Boolean(searchLoading) && (
-              <Text style={styles.searchLoadingText}>Searching...</Text>
-            )}
-
-            {!Boolean(searchLoading) && Boolean(searchResults.length > 0) && (
-              <FlatList
-                data={searchResults}
-                keyExtractor={(item) => item.id.toString()}
-                renderItem={({ item }) => (
-                  <View style={styles.searchResultItem}>
-                    <View style={styles.searchResultContent}>
-                      {item.poster_path && (
-                        <Image
-                          source={{
-                            uri: `https://image.tmdb.org/t/p/w92${item.poster_path}`
-                          }}
-                          style={styles.searchResultPoster}
-                          resizeMode="cover"
-                        />
-                      )}
-                      <View style={styles.searchResultInfo}>
-                        <Text style={styles.searchResultTitle} numberOfLines={1}>
-                          {item.title}
-                        </Text>
-                        <Text style={styles.searchResultYear}>
-                          {item.release_date ? new Date(item.release_date).getFullYear().toString() : 'Unknown'}
-                        </Text>
-                        <Text style={styles.searchResultOverview} numberOfLines={2}>
-                          {item.overview || 'No description available'}
-                        </Text>
-                      </View>
-                    </View>
-                    <TouchableOpacity
-                      style={[
-                        styles.addMovieButton,
-                        addingMovie === item.id && styles.addMovieButtonDisabled
-                      ]}
-                      onPress={() => addMovieToLibrary(item)}
-                      disabled={addingMovie === item.id}
-                    >
-                      <Text style={styles.addMovieButtonText}>
-                        {addingMovie === item.id ? 'Checking...' : 'Add'}
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-                )}
-                style={styles.searchResultsList}
-                showsVerticalScrollIndicator={false}
-              />
-            )}
-
-            {!Boolean(searchLoading) && Boolean(movieSearchQuery.trim()) && Boolean(searchResults.length === 0) && (
-              <Text style={styles.noResultsText}>No movies found</Text>
-            )}
-
-            <TouchableOpacity
-              style={styles.addMovieCloseButton}
-              onPress={() => {
-                setAddMovieModalVisible(false);
-                setMovieSearchQuery('');
-                setSearchResults([]);
-                if (searchTimeout) {
-                  clearTimeout(searchTimeout);
-                  setSearchTimeout(null);
-                }
-              }}
-            >
-              <Text style={styles.addMovieCloseButtonText}>Close</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-
-      {/* Analytics Modal */}
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={analyticsModalVisible}
-        onRequestClose={() => setAnalyticsModalVisible(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.analyticsModalContent}>
-            <Text style={styles.analyticsModalTitle}>Movie Analytics</Text>
-            <Text style={styles.analyticsSubtitle}>Movies by Release Year</Text>
-
-            <ScrollView
-              style={styles.chartContainer}
-              horizontal={true}
-              showsHorizontalScrollIndicator={true}
-            >
-              <AnalyticsChart movies={userMovies} />
-            </ScrollView>
-
-            <TouchableOpacity
-              style={styles.analyticsCloseButton}
-              onPress={() => setAnalyticsModalVisible(false)}
-            >
-              <Text style={styles.closeButtonText}>Close</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
+      <AnalyticsModal
+        visible={analytics_modal_visible}
+        movies={user_movies}
+        onClose={() => setAnalyticsModalVisible(false)}
+      />
     </View>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {
@@ -762,371 +334,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    width: '90%',
-    maxWidth: 400,
-    marginBottom: 8,
-  },
-  sortButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: 44,
-    height: 44,
-    borderRadius: 8,
-    marginRight: 6,
-    backgroundColor: '#f0f0f0',
-    borderWidth: 1,
-    borderColor: '#ccc',
-  },
-  sortButtonActive: {
-    backgroundColor: '#0D6EFD',
-    borderColor: '#0D6EFD',
-  },
   list: {
     padding: 8,
-  },
-  searchBar: {
-    backgroundColor: '#fff',
-    padding: 10,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    fontSize: 16,
-    flex: 1,
-    height: 44,
-  },
-  addButton: {
-    backgroundColor: '#198754',
-    padding: 10,
-    borderRadius: 8,
-    marginLeft: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: 44,
-    height: 44,
-  },
-  analyticsButton: {
-    backgroundColor: '#0D6EFD',
-    padding: 10,
-    borderRadius: 8,
-    marginLeft: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: 44,
-    height: 44,
-  },
-  exportButton: {
-    backgroundColor: '#198754',
-    padding: 10,
-    borderRadius: 8,
-    marginLeft: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: 44,
-    height: 44,
-  },
-  tile: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    height: tile_size * 1.5, // Taller for movie posters
-    width: tile_size,
-    margin: 8,
-    borderRadius: 8,
-    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.3)',
-    borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    overflow: 'hidden',
-  },
-  tilePressed: {
-    opacity: 0.8,
-    transform: [{ scale: 0.98 }],
-  },
-  tileImage: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 6,
-  },
-  tileFallback: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 6,
-  },
-  posterOverlay: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    padding: 8,
-    alignItems: 'center',
-  },
-  movieTitle: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 14,
-    textAlign: 'center',
-    marginBottom: 4,
-  },
-  movieYear: {
-    color: '#ccc',
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  movieGenre: {
-    color: '#aaa',
-    fontSize: 10,
-    fontWeight: '500',
-    marginTop: 2,
-  },
-
-  // Modal Styles
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalContent: {
-    backgroundColor: '#25292e',
-    borderRadius: 12,
-    width: '90%',
-    maxWidth: 500,
-    maxHeight: '80%',
-    borderWidth: 2,
-    borderColor: '#444',
-  },
-  modalScrollContent: {
-    padding: 0,
-  },
-  movieBackdrop: {
-    width: '100%',
-    height: 200,
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
-  },
-  movieHeader: {
-    padding: 20,
-    alignItems: 'center',
-  },
-  modalTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#fff',
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  movieTagline: {
-    fontSize: 16,
-    color: '#ccc',
-    fontStyle: 'italic',
-    textAlign: 'center',
-    marginBottom: 12,
-  },
-  movieMeta: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    marginBottom: 8,
-  },
-  movieYearModal: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  movieRuntime: {
-    color: '#ccc',
-    fontSize: 16,
-    marginLeft: 8,
-  },
-  movieRating: {
-    color: '#ffd700',
-    fontSize: 16,
-    marginLeft: 8,
-  },
-  movieGenres: {
-    color: '#aaa',
-    fontSize: 14,
-    textAlign: 'center',
-    marginTop: 8,
-  },
-  movieOverview: {
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-  },
-  overviewTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginBottom: 8,
-  },
-  overviewText: {
-    color: '#ccc',
-    fontSize: 16,
-    lineHeight: 24,
-  },
-  movieDetails: {
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-  },
-  detailsTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginBottom: 12,
-  },
-  detailRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 8,
-  },
-  detailLabel: {
-    color: '#aaa',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  detailValue: {
-    color: '#fff',
-    fontSize: 16,
-  },
-  closeButton: {
-    backgroundColor: '#0D6EFD',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-    marginHorizontal: 20,
-    marginBottom: 20,
-    alignItems: 'center',
-  },
-  closeButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-
-  // Analytics Modal Styles
-  analyticsModalContent: {
-    backgroundColor: '#25292e',
-    borderRadius: 12,
-    padding: 20,
-    width: '95%',
-    maxWidth: 700,
-    maxHeight: '85%',
-    borderWidth: 2,
-    borderColor: '#444',
-  },
-  analyticsModalTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#fff',
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  analyticsSubtitle: {
-    fontSize: 16,
-    color: '#ccc',
-    textAlign: 'center',
-    marginBottom: 20,
-  },
-  chartContainer: {
-    maxHeight: 350,
-    marginBottom: 20,
-  },
-  chartWrapper: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    justifyContent: 'flex-start',
-    paddingVertical: 20,
-    paddingHorizontal: 10,
-    minHeight: 200,
-    minWidth: '100%',
-  },
-  barContainer: {
-    alignItems: 'center',
-    minWidth: 32,
-    marginHorizontal: 2,
-  },
-  barWrapper: {
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  bar: {
-    width: 24,
-    backgroundColor: '#007bff',
-    borderRadius: 4,
-    minHeight: 10,
-  },
-  barValue: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: 'bold',
-    position: 'absolute',
-    top: -18,
-  },
-  barLabel: {
-    color: '#ccc',
-    fontSize: 10,
-    textAlign: 'center',
-  },
-  noDataContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 40,
-  },
-  noDataText: {
-    color: '#ccc',
-    fontSize: 16,
-  },
-  analyticsCloseButton: {
-    backgroundColor: '#0D6EFD',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-
-  // Add Movie Modal Styles
-  addMovieModalContent: {
-    backgroundColor: '#25292e',
-    borderRadius: 12,
-    padding: 24,
-    width: '85%',
-    maxWidth: 450,
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: '#444',
-  },
-  addMovieModalTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginBottom: 12,
-    textAlign: 'center',
-  },
-  addMovieModalText: {
-    color: '#ccc',
-    fontSize: 16,
-    textAlign: 'center',
-    marginBottom: 20,
-    lineHeight: 22,
-  },
-  addMovieCloseButton: {
-    backgroundColor: '#0D6EFD',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-  },
-  addMovieCloseButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   loadingText: {
     color: '#fff',
@@ -1152,84 +361,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
     lineHeight: 24,
-  },
-  movieSearchInput: {
-    width: '100%',
-    height: 40,
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    marginBottom: 16,
-    fontSize: 16,
-  },
-  searchLoadingText: {
-    textAlign: 'center',
-    color: '#888',
-    fontSize: 16,
-    marginVertical: 20,
-  },
-  searchResultsList: {
-    maxHeight: 400,
-    width: '100%',
-  },
-  searchResultItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: '#333',
-  },
-  searchResultContent: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  searchResultPoster: {
-    width: 50,
-    height: 75,
-    borderRadius: 4,
-    marginRight: 12,
-  },
-  searchResultInfo: {
-    flex: 1,
-  },
-  searchResultTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#fff',
-    marginBottom: 4,
-  },
-  searchResultYear: {
-    fontSize: 14,
-    color: '#ccc',
-    marginBottom: 4,
-  },
-  searchResultOverview: {
-    fontSize: 12,
-    color: '#999',
-    lineHeight: 16,
-  },
-  addMovieButton: {
-    backgroundColor: '#198754',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 6,
-    minWidth: 60,
-    alignItems: 'center',
-  },
-  addMovieButtonDisabled: {
-    backgroundColor: '#666',
-  },
-  addMovieButtonText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  noResultsText: {
-    textAlign: 'center',
-    color: '#888',
-    fontSize: 16,
-    marginVertical: 20,
   },
 });
