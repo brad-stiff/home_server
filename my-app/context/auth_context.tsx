@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { saveToken, loadToken, deleteToken } from '../utils/token_storage';
+import { saveToken, loadToken, deleteToken } from '@/utils/token_storage';
 import Constants from 'expo-constants';
 
 const api_url = Constants.expoConfig?.extra?.api_url;

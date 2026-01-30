@@ -9,7 +9,7 @@ import {
     StyleSheet
 } from 'react-native';
 import { useState } from 'react';
-import type { TMDBMovie } from '@/app/types/movie';
+import type { TMDBMovie } from '@/types/movie';
 
 type Props = {
   visible: boolean;

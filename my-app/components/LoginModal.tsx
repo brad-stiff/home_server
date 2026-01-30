@@ -1,7 +1,7 @@
 // app/components/LoginModal.tsx
 import { Modal, View, Text, TextInput, Button, StyleSheet } from 'react-native';
 import { useState } from 'react';
-import { useAuth } from '@/app/context/auth_context';
+import { useAuth } from '@/context/auth_context';
 import ApiService from '../services/api';
 
 export default function LoginModal() {

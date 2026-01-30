@@ -14,7 +14,7 @@ import MovieTileComponent from '@/components/movie/MovieTile';
 import MovieDetailsModal from '@/components/movie/MovieDetailsModal';
 import AddMovieModal from '@/components/movie/AddMovieModal';
 import AnalyticsModal from '@/components/movie/AnalyticsModal';
-import { MovieTile, MovieDetails, TMDBMovie, SortDirection } from '@/app/types/movie';
+import { MovieTile, MovieDetails, TMDBMovie, SortDirection } from '@/types/movie';
 
 export default function MoviesScreen() {
   // Search + sorting
