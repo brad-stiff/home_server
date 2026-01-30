@@ -30,16 +30,27 @@ A full-stack home server application featuring a movie library and basic games. 
 │   │   │   ├── movies.tsx      # Movie library interface
 │   │   │   └── games.tsx       # Games interface
 │   │   ├── components/     # Reusable UI components
-│   │   └── services/       # API services
+│   │   ├── context/        # Global app context
+│   │   ├── services/       # API services
+│   │   ├── types/          # Typescript object definitions
+│   │   └── utils/          # Helper functions and utilities
 │   └── ...
 ├── my-app-backend/         # Node.js backend server
+│   ├── bruno_collections   # Api request collections for testing
 │   ├── src/
+│   │   ├── config/         # App configuration files
 │   │   ├── controllers/    # Route controllers
 │   │   ├── db/             # Database layer
 │   │   │   ├── sql/        # SQL queries
 │   │   │   └── migrations/ # Database migrations
-│   │   ├── routes/         # API routes
-│   │   └── services/       # External service integrations
+│   │   ├── loaders/        # Initializes services
+│   │   ├── router/         # Routing layer
+│   │   │   ├── controllers/    # Route-specific logic
+│   │   │   ├── middleware/     # Auth, validation, rate limiting, etc.
+│   │   │   ├── routes/         # Route definitions
+│   │   │   └── validators/     # Request validation schemas
+│   │   ├── services/       # External service integrations
+│   │   └── types/          # Typescript object definitions
 │   └── ...
 └── README.md
 ```
