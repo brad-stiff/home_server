@@ -7,7 +7,7 @@ import {
     Pressable,
     StyleSheet
   } from 'react-native';
-import { MovieDetails } from '@/app/types/movie';
+import { MovieDetails } from '@/types/movie';
 
 type Props = {
   visible: boolean;

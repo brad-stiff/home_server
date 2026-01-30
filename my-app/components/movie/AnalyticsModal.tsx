@@ -6,7 +6,7 @@ import {
     ScrollView,
     StyleSheet
 } from 'react-native';
-import type { MovieTile } from '@/app/types/movie';
+import type { MovieTile } from '@/types/movie';
 import AnalyticsChart from './AnalyticsChart';
 
 type Props = {

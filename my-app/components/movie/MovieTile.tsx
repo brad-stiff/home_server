@@ -1,5 +1,5 @@
 import { Pressable, View, Text, Image, Platform, StyleSheet, Dimensions } from 'react-native';
-import { MovieTile } from '../../app/types/movie';
+import { MovieTile } from '../../types/movie';
 
 const { width } = Dimensions.get('window');
 const number_of_columns = 4;

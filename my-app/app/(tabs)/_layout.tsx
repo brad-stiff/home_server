@@ -10,7 +10,7 @@ import {
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useState } from 'react';
 
-import { useAuth } from '../context/auth_context';
+import { useAuth } from '@/context/auth_context';
 //ionicons for movie library
 //logo-amazon
 //disc
