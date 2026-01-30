@@ -39,7 +39,6 @@ A full-stack home server application featuring a movie library and basic games. 
 │   ├── bruno_collections   # Api request collections for testing
 │   ├── src/
 │   │   ├── config/         # App configuration files
-│   │   ├── controllers/    # Route controllers
 │   │   ├── db/             # Database layer
 │   │   │   ├── sql/        # SQL queries
 │   │   │   └── migrations/ # Database migrations
