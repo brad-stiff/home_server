@@ -1,5 +1,5 @@
 import { Redirect } from 'expo-router';
-import { useAuth } from '../context/auth_context';
+import { useAuth } from '@/context/auth_context';
 import { StyleSheet, Text, View } from 'react-native';
 
 export default function ProfileScreen() {
