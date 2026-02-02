@@ -1,13 +1,12 @@
-import { selectQuery } from "../util";
+import { selectQuery, modifyQuery } from "../util";
 import type {
   User,
   UserRequest,
   UserLevel,
-  UserRegisterRequest } from "../../types/user"
+  UserRegisterRequest
+} from "../../types/user"
 
-//getUser
 export function getUser(id: number) {
-  console.log(id, typeof id);
   return selectQuery<User>(`
     SELECT
       u.id,
@@ -26,7 +25,6 @@ export function getUser(id: number) {
   `, [id]);
 }
 
-//getUsers
 export function getUsers(users_request: UserRequest) {
   const params = [];
   const wheres: string[] = [];
@@ -89,6 +87,66 @@ export function insertUser(new_user: UserRegisterRequest) {
 
 //updateUser
 ///how do i handle password
+
+//update password
+export function updateUserPassword(update_password_request: { user_id: number, password_hash: string }) {
+  return modifyQuery(`
+    UPDATE user
+    SET
+      password_hash = ?,
+      updated_at = NOW()
+    WHERE
+      id = ?
+  `, [
+    update_password_request.password_hash,
+    update_password_request.user_id
+  ]);
+}
+
+//update first name
+export function updateUserFirstName(update_first_name_request: { user_id: number, name: string }) {
+  return modifyQuery(`
+    UPDATE user
+    SET
+      first_name = ?,
+      updated_at = NOW()
+    WHERE
+      id = ?
+  `, [
+    update_first_name_request.name,
+    update_first_name_request.user_id
+  ]);
+}
+
+//update last name
+export function updateUserLastName(update_last_name_request: { user_id: number, name: string }) {
+  return modifyQuery(`
+    UPDATE user
+    SET
+      last_name = ?,
+      updated_at = NOW()
+    WHERE
+      id = ?
+  `, [
+    update_last_name_request.name,
+    update_last_name_request.user_id,
+  ]);
+}
+
+//update avatar img data
+export function updateUserAvatar(update_avatar_request: { user_id: number, image_buffer: Buffer }) {
+  return modifyQuery(`
+    UPDATE user
+    SET
+      avatar_img_data = ?,
+      updated_at = NOW()
+    WHERE
+      id = ?
+  `, [
+    update_avatar_request.image_buffer,
+    update_avatar_request.user_id
+  ]);
+}
 
 export function getUserPasswordHash(email: string) {
     return selectQuery<{password_hash:string}>(`

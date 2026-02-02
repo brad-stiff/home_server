@@ -2,17 +2,25 @@ import { Request, Response, NextFunction } from 'express';
 
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
+import sharp from 'sharp';
 
 import db from '../../db'
 import config from '../../config'
 
 import { AuthRequest } from '../middleware/auth';
-import { validateRegister } from '../validators/user'
+import {
+  validateRegister,
+  validateLogin,
+  validateProfilePicture,
+  validateFirstName,
+  validateLastName,
+  validatePasswordUpdate
+} from '../validators/user'
 
 export class UserController {
   async getMe(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const user_id = req.user!.id;
+      const user_id = req.user.id;
 
       const found_users = await db.user.getUser(user_id);
       if (!found_users || found_users.length === 0) {
@@ -22,6 +30,36 @@ export class UserController {
       const user = found_users[0];
       return res.status(200).json({ user });
 
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async updateProfilePicture(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const user_id = req.user.id;
+      //vlidation on image
+      const validation = validateProfilePicture(req.body);
+      if ('errors' in validation) {
+        return res.status(400).json({ errors: validation.errors });
+      }
+
+      const { image_base64 } = validation.data;
+
+      if (!image_base64) {
+        return res.status(400).json({ success: false, message: 'No image provided' });
+      }
+
+      const image_buffer = Buffer.from(image_base64, 'base64');
+
+      const resized = await sharp(image_buffer)
+        .resize(256, 256)
+        .jpeg({ quality: 80 })
+        .toBuffer();
+
+      await db.user.updateUserAvatar({ user_id: user_id, image_buffer: resized});
+
+      return res.json({ success: true, message: 'Profile picture updated' });
     } catch (error) {
       next(error);
     }
@@ -56,11 +94,8 @@ export class UserController {
         email,
         password_hash: hash
       };
-      //await insert
       const response = await db.user.insertUser(new_user_request);
-      //delete password
       res.json(response)
-
     } catch (error) {
       next(error);
     }
@@ -68,7 +103,7 @@ export class UserController {
 
   async login(req: Request, res: Response, next: NextFunction) {
     try {
-      const validation = validateRegister(req.body);
+      const validation = validateLogin(req.body);
       if ('errors' in validation) {
         return res.status(400).json({ errors: validation.errors });
       }
@@ -104,6 +139,94 @@ export class UserController {
 
       return res.status(200).json({ user: found_users[0] });
 
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async updateFirstName(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const user_id = req.user.id;
+
+      const validation = validateFirstName(req.body);
+      if ('errors' in validation) {
+        return res.status(400).json({ errors: validation.errors });
+      }
+
+      const { first_name } = validation.data;
+
+      await db.user.updateUserFirstName({ user_id, name: first_name });
+
+      return res.json({ success: true, message: 'First name updated' });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async updateLastName(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const user_id = req.user.id;
+
+      const validation = validateLastName(req.body);
+      if ('errors' in validation) {
+        return res.status(400).json({ errors: validation.errors });
+      }
+
+      const { last_name } = validation.data;
+
+      await db.user.updateUserLastName({ user_id, name: last_name });
+
+      return res.json({ success: true, message: 'Last name updated' });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async updatePassword(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const user_id = req.user.id;
+
+      const validation = validatePasswordUpdate(req.body);
+      if ('errors' in validation) {
+        return res.status(400).json({ errors: validation.errors });
+      }
+
+      const { current_password, new_password } = validation.data;
+
+      // Get current user to verify current password
+      const found_users = await db.user.getUser(user_id);
+      if (!found_users || found_users.length === 0) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      const user = found_users[0];
+
+      // Get current password hash
+      const password_hash_result = await db.user.getUserPasswordHash(user.email);
+      if (password_hash_result.length === 0) {
+        return res.status(400).json({ errors: ['Cannot verify current password'] });
+      }
+
+      // Verify current password
+      const isCurrentPasswordValid = await bcrypt.compare(
+        current_password,
+        password_hash_result[0].password_hash
+      );
+
+      if (!isCurrentPasswordValid) {
+        return res.status(400).json({ errors: ['Current password is incorrect'] });
+      }
+
+      // Hash new password
+      const new_password_hash = await bcrypt.hash(new_password, 12);
+
+      // Update password
+      await db.user.updateUserPassword({
+        user_id,
+        password_hash: new_password_hash,
+      });
+
+      return res.json({ success: true, message: 'Password updated' });
     } catch (error) {
       next(error);
     }

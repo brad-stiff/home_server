@@ -1,0 +1,21 @@
+meta {
+  name: Update Profile Picture
+  type: http
+  seq: 1
+}
+
+put {
+  url: http://localhost:3001/api/users/profile-picture
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{auth_token}}
+}
+
+body:json {
+  {
+    "image_base64": "{{test_image_base64_str}}"
+  }
+}

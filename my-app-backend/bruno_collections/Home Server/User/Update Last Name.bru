@@ -1,0 +1,21 @@
+meta {
+  name: Update Last Name
+  type: http
+  seq: 8
+}
+
+put {
+  url: http://localhost:3001/api/users/last-name
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{auth_token}}
+}
+
+body:json {
+  {
+    "last_name": "Test"
+  }
+}
