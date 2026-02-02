@@ -64,8 +64,6 @@ export function validateLogin(body: unknown): { data: UserLoginRequest } | { err
 }
 
 export function validateProfilePicture(body: unknown): { data: { image_base64: string } } | { errors: string[] } {
-  console.log("RAW BODY:", body);
-
   // First validate the basic structure
   const result = profilePictureSchema.safeParse(body);
 
