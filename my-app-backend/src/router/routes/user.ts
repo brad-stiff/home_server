@@ -8,6 +8,12 @@ const router = Router();
 
 router.get('/me', authenticateToken, userController.getMe);
 
+router.put('/profile-picture', authenticateToken, userController.updateProfilePicture);
+router.put('/first-name', authenticateToken, userController.updateFirstName);
+router.put('/last-name', authenticateToken, userController.updateLastName);
+router.put('/password', authenticateToken, userController.updatePassword);
+
+
 router.get('/user_levels', userController.getUserLevels);
 
 router.post('/register', userController.register);
