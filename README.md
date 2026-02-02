@@ -29,11 +29,11 @@ A full-stack home server application featuring a movie library and basic games. 
 │   │   ├── (tabs)/         # App screens/tabs
 │   │   │   ├── movies.tsx      # Movie library interface
 │   │   │   └── games.tsx       # Games interface
-│   │   ├── components/     # Reusable UI components
-│   │   ├── context/        # Global app context
-│   │   ├── services/       # API services
-│   │   ├── types/          # Typescript object definitions
-│   │   └── utils/          # Helper functions and utilities
+│   ├── components/         # Reusable UI components
+│   ├── context/            # Global app context
+│   ├── services/           # API services
+│   ├── types/              # Typescript object definitions
+│   ├── utils/              # Helper functions and utilities
 │   └── ...
 ├── my-app-backend/         # Node.js backend server
 │   ├── bruno_collections   # Api request collections for testing
