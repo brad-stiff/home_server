@@ -104,7 +104,8 @@ This home server application provides a centralized platform for entertainment a
    ```
 
 3. **Environment Setup:**
-   - Update API base URL in `services/api.ts` if needed
+   - Copy `.env.example` to `.env`
+   - Add your API base URL
 
 4. **Start the development server:**
    ```bash
