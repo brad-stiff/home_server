@@ -15,6 +15,11 @@ const API_ENDPOINTS = {
     REGISTER: ``,
     LOGIN: `${API_BASE_URL}/users/login`,
     LOGOUT: ``
+  },
+  MTG_CARDS: {
+    SETS: `${API_BASE_URL}/mtg-cards/sets`,
+    SEARCH: `${API_BASE_URL}/mtg-cards/search`,
+    CARDS_BY_SET: (setCode: string) => `${API_BASE_URL}/mtg-cards/sets/${setCode}/cards`,
   }
 } as const;
 
@@ -76,6 +81,19 @@ class ApiService {
       },
       body: JSON.stringify({ email: email, password: password})
     });
+  }
+
+  //mtg cards
+  static async getSets(): Promise<ApiResponse<any>> {
+    return this.request(API_ENDPOINTS.MTG_CARDS.SETS);
+  }
+
+  static async searchCards(query: string, page: number = 1): Promise<ApiResponse<any>> {
+    return this.request(`${API_ENDPOINTS.MTG_CARDS.SEARCH}?q=${encodeURIComponent(query)}&page=${page}`);
+  }
+
+  static async getCardsBySet(setCode: string, page: number = 1): Promise<ApiResponse<any>> {
+    return this.request(`${API_ENDPOINTS.MTG_CARDS.CARDS_BY_SET(setCode)}?page=${page}`);
   }
 }
 
