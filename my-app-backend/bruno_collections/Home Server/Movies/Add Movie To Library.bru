@@ -1,0 +1,17 @@
+meta {
+  name: Add Movie To Library
+  type: http
+  seq: 12
+}
+
+post {
+  url: http://localhost:3001/api/movies/library/
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "tmdb_id": 11
+  }
+}

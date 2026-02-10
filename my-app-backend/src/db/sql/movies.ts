@@ -53,7 +53,7 @@ export async function insertMovie(movie: MovieInsertRequest) {
     });
 
     // Insert movie
-    const insertResult = await new Promise<any>((resolve, reject) => {
+    const insert_result = await new Promise<any>((resolve, reject) => {
       connection.execute(`
         INSERT INTO movie (
           tmdb_id,
@@ -64,6 +64,13 @@ export async function insertMovie(movie: MovieInsertRequest) {
           overview,
           added_at
         ) VALUES (?, ?, ?, ?, ?, ?, ?)
+        ON DUPLICATE KEY UPDATE
+          title = VALUES(title),
+          release_date = VALUES(release_date),
+          poster_path = VALUES(poster_path),
+          backdrop_path = VALUES(backdrop_path),
+          overview = VALUES(overview),
+          added_at = VALUES(added_at)
       `, [
         movie.tmdb_id,
         movie.title,
@@ -78,13 +85,13 @@ export async function insertMovie(movie: MovieInsertRequest) {
       });
     });
 
-    const movieId = insertResult.insertId;
+    const movie_id = insert_result.insertId;
 
     // Insert genres if provided
     if (movie.genre_ids && movie.genre_ids.length > 0) {
       // Build dynamic SQL with multiple value placeholders
       const placeholders = movie.genre_ids.map(() => '(?, ?)').join(', ');
-      const values = movie.genre_ids.flatMap(genreId => [movieId, genreId]);
+      const values = movie.genre_ids.flatMap(genreId => [movie_id, genreId]);
 
       await new Promise((resolve, reject) => {
         connection.execute(`
@@ -118,7 +125,7 @@ export async function insertMovie(movie: MovieInsertRequest) {
           m.added_at
         FROM movie m
         WHERE m.id = ?
-      `, [movieId], (err: any, results: any) => {
+      `, [movie_id], (err: any, results: any) => {
         if (err) reject(err);
         else resolve(results as Movie[]);
       });

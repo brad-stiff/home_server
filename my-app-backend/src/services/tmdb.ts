@@ -3,7 +3,10 @@ import config from '../config';
 
 import type {
   TMDBMovieDetails,
-  TMDBSearchResponse
+  TMDBSearchResponse,
+  TMDBGenreResponse,
+  TMDBMovieCredits,
+  TMDBMovieImages
 } from '../types/movie'
 
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
@@ -17,9 +20,6 @@ class TMDBService {
     },
   });
 
-  /**
-   * Search for movies by query
-   */
   async searchMovies(query: string, page: number = 1): Promise<TMDBSearchResponse> {
     try {
       const response: AxiosResponse<TMDBSearchResponse> = await this.api.get('/search/movie', {
@@ -36,9 +36,6 @@ class TMDBService {
     }
   }
 
-  /**
-   * Get popular movies
-   */
   async getPopularMovies(page: number = 1): Promise<TMDBSearchResponse> {
     try {
       const response: AxiosResponse<TMDBSearchResponse> = await this.api.get('/movie/popular', {
@@ -51,9 +48,6 @@ class TMDBService {
     }
   }
 
-  /**
-   * Get top rated movies
-   */
   async getTopRatedMovies(page: number = 1): Promise<TMDBSearchResponse> {
     try {
       const response: AxiosResponse<TMDBSearchResponse> = await this.api.get('/movie/top_rated', {
@@ -66,9 +60,6 @@ class TMDBService {
     }
   }
 
-  /**
-   * Get now playing movies
-   */
   async getNowPlayingMovies(page: number = 1): Promise<TMDBSearchResponse> {
     try {
       const response: AxiosResponse<TMDBSearchResponse> = await this.api.get('/movie/now_playing', {
@@ -81,9 +72,6 @@ class TMDBService {
     }
   }
 
-  /**
-   * Get upcoming movies
-   */
   async getUpcomingMovies(page: number = 1): Promise<TMDBSearchResponse> {
     try {
       const response: AxiosResponse<TMDBSearchResponse> = await this.api.get('/movie/upcoming', {
@@ -96,12 +84,9 @@ class TMDBService {
     }
   }
 
-  /**
-   * Get detailed movie information by ID
-   */
-  async getMovieDetails(movieId: number): Promise<TMDBMovieDetails> {
+  async getMovieDetails(movie_id: number): Promise<TMDBMovieDetails> {
     try {
-      const response: AxiosResponse<TMDBMovieDetails> = await this.api.get(`/movie/${movieId}`);
+      const response: AxiosResponse<TMDBMovieDetails> = await this.api.get(`/movie/${movie_id}`);
       return response.data;
     } catch (error) {
       console.error('Error fetching movie details:', error);
@@ -109,12 +94,9 @@ class TMDBService {
     }
   }
 
-  /**
-   * Get movie images (posters, backdrops)
-   */
-  async getMovieImages(movieId: number): Promise<any> {
+  async getMovieImages(movie_id: number): Promise<TMDBMovieImages> {
     try {
-      const response = await this.api.get(`/movie/${movieId}/images`);
+      const response = await this.api.get(`/movie/${movie_id}/images`);
       return response.data;
     } catch (error) {
       console.error('Error fetching movie images:', error);
@@ -122,12 +104,9 @@ class TMDBService {
     }
   }
 
-  /**
-   * Get movie credits (cast and crew)
-   */
-  async getMovieCredits(movieId: number): Promise<any> {
+  async getMovieCredits(movie_id: number): Promise<TMDBMovieCredits> {
     try {
-      const response = await this.api.get(`/movie/${movieId}/credits`);
+      const response = await this.api.get(`/movie/${movie_id}/credits`);
       return response.data;
     } catch (error) {
       console.error('Error fetching movie credits:', error);
@@ -135,12 +114,9 @@ class TMDBService {
     }
   }
 
-  /**
-   * Get similar movies
-   */
-  async getSimilarMovies(movieId: number, page: number = 1): Promise<TMDBSearchResponse> {
+  async getSimilarMovies(movie_id: number, page: number = 1): Promise<TMDBSearchResponse> {
     try {
-      const response: AxiosResponse<TMDBSearchResponse> = await this.api.get(`/movie/${movieId}/similar`, {
+      const response: AxiosResponse<TMDBSearchResponse> = await this.api.get(`/movie/${movie_id}/similar`, {
         params: { page },
       });
       return response.data;
@@ -150,12 +126,9 @@ class TMDBService {
     }
   }
 
-  /**
-   * Get movie recommendations
-   */
-  async getMovieRecommendations(movieId: number, page: number = 1): Promise<TMDBSearchResponse> {
+  async getMovieRecommendations(movie_id: number, page: number = 1): Promise<TMDBSearchResponse> {
     try {
-      const response: AxiosResponse<TMDBSearchResponse> = await this.api.get(`/movie/${movieId}/recommendations`, {
+      const response: AxiosResponse<TMDBSearchResponse> = await this.api.get(`/movie/${movie_id}/recommendations`, {
         params: { page },
       });
       return response.data;
@@ -165,10 +138,7 @@ class TMDBService {
     }
   }
 
-  /**
-   * Get movie genres
-   */
-  async getGenres(): Promise<any> {
+  async getGenres(): Promise<TMDBGenreResponse> {
     try {
       const response = await this.api.get('/genre/movie/list');
       return response.data;

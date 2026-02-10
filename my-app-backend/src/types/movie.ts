@@ -75,3 +75,65 @@ export type TMDBSearchResponse = {
   total_pages: number;
   total_results: number;
 }
+
+export type TMDBGenre = {
+  id: number;
+  name: string;
+}
+
+export type TMDBGenreResponse = {
+  genres: TMDBGenre[];
+}
+
+export type TMDBMovieCredits = {
+  id: number;
+  cast: TMDBMovieCast[];
+  crew: TMDBMovieCrew[];
+}
+
+export type TMDBMovieCast = {
+  adult: boolean;
+  gender: number;
+  id: number;
+  known_for_department: string;
+  name: string;
+  original_name: string;
+  popularity: number;
+  profile_path: string | null;
+  cast_id: number;
+  character: string;
+  credit_id: string;
+  order: number;
+}
+
+export type TMDBMovieCrew = {
+  adult: boolean;
+  gender: number;
+  id: number;
+  known_for_department: string;
+  name: string;
+  original_name: string;
+  popularity: number;
+  profile_path: string | null;
+  credit_id: string;
+  department: string;
+  job: string;
+}
+
+export type TMDBMovieImages = {
+  id: number;
+  backdrops: TMDBMovieImage[];
+  logos: TMDBMovieImage[];
+  posters: TMDBMovieImage[];
+}
+
+export type TMDBMovieImage = {
+  aspect_ratio: number;
+  file_path: string;
+  height: number;
+  iso_639_1: string | null;
+  iso_3166_1: string | null;
+  vote_average: number;
+  vote_count: number;
+  width: number;
+}

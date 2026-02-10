@@ -1,0 +1,15 @@
+meta {
+  name: Movie Recommendations
+  type: http
+  seq: 11
+}
+
+get {
+  url: http://localhost:3001/api/movies/603/recommendations?page=2
+  body: none
+  auth: none
+}
+
+params:query {
+  page: 2
+}
