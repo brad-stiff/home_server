@@ -1,0 +1,15 @@
+meta {
+  name: Similar Movies
+  type: http
+  seq: 10
+}
+
+get {
+  url: http://localhost:3001/api/movies/603/similar
+  body: none
+  auth: none
+}
+
+params:query {
+  ~page: 2
+}

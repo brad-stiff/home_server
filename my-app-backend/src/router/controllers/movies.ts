@@ -2,14 +2,25 @@ import { Request, Response, NextFunction } from 'express';
 import TMDBService from '../../services/tmdb';
 import db from '../../db';
 import type { MovieInsertRequest } from '../../types/movie';
+import {
+  validateAddToLibrary,
+  validateRemoveFromLibrary,
+  validateGetPopularMovies,
+  validateSearchMovies,
+  validateGetTopRatedMovies,
+  validateGetNowPlayingMovies,
+  validateGetUpcomingMovies,
+  validateGetMovieDetails,
+  validateGetMovieImages,
+  validateGetMovieCredits,
+  validateGetSimilarMovies,
+  validateGetMovieRecommendations
+} from '../validators/movies';
 
 export class MoviesController {
-  /**
-   * Get user's movie library
-   */
+
   async getUserLibrary(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      // Movies are now global - not tied to specific users
       const movies = await db.movies.getMovies();
 
       res.json({
@@ -22,37 +33,29 @@ export class MoviesController {
     }
   }
 
-  /**
-   * Add movie to user's library
-   */
   async addToLibrary(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { tmdb_id } = req.body;
-
-      if (!tmdb_id) {
-        res.status(400).json({
-          error: 'TMDB movie ID is required'
-        });
+      const validation = validateAddToLibrary(req.body);
+      if ('errors' in validation) {
+        res.status(400).json({ errors: validation.errors });
         return;
       }
-
-      // TODO: Get user_id from JWT token
-      const user_id = 1; // This should come from authenticated user
+      const { tmdb_id } = validation.data;
 
       // Get movie details from TMDB
-      const movieDetails = await TMDBService.getMovieDetails(tmdb_id);
+      const movie_details = await TMDBService.getMovieDetails(tmdb_id);
 
-      const movieData: MovieInsertRequest = {
+      const movie_data: MovieInsertRequest = {
         tmdb_id,
-        title: movieDetails.title,
-        release_date: movieDetails.release_date,
-        poster_path: movieDetails.poster_path,
-        backdrop_path: movieDetails.backdrop_path,
-        overview: movieDetails.overview,
-        genre_ids: movieDetails.genres?.map(genre => genre.id),
+        title: movie_details.title,
+        release_date: movie_details.release_date,
+        poster_path: movie_details.poster_path,
+        backdrop_path: movie_details.backdrop_path,
+        overview: movie_details.overview,
+        genre_ids: movie_details.genres?.map(genre => genre.id),
       };
 
-      const result = await db.movies.insertMovie(movieData);
+      const result = await db.movies.insertMovie(movie_data);
 
       res.json({
         success: true,
@@ -64,30 +67,17 @@ export class MoviesController {
     }
   }
 
-  /**
-   * Remove movie from user's library
-   */
+  // TODO - add authentication (admin user only)
   async removeFromLibrary(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { id } = req.params;
-
-      if (!id) {
-        res.status(400).json({
-          error: 'Movie ID is required'
-        });
+      const validation = validateRemoveFromLibrary(req.params);
+      if ('errors' in validation) {
+        res.status(400).json({ errors: validation.errors });
         return;
       }
+      const { id } = validation.data;
 
-      // TODO: Get user_id from JWT token
-      const movieId = parseInt(id, 10);
-      if (isNaN(movieId)) {
-        res.status(400).json({
-          error: 'Invalid movie ID'
-        });
-        return;
-      }
-
-      await db.movies.deleteMovie(movieId);
+      await db.movies.deleteMovie(id);
 
       res.json({
         success: true,
@@ -99,22 +89,16 @@ export class MoviesController {
     }
   }
 
-  /**
-   * Search for movies
-   */
   async searchMovies(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { q: query, page = 1 } = req.query;
-
-      if (!query || typeof query !== 'string') {
-        res.status(400).json({
-          error: 'Query parameter is required'
-        });
+      const validation = validateSearchMovies(req.query);
+      if ('errors' in validation) {
+        res.status(400).json({ errors: validation.errors });
         return;
       }
+      const { q: query, page } = validation.data;
 
-      const pageNumber = parseInt(page as string, 10) || 1;
-      const results = await TMDBService.searchMovies(query, pageNumber);
+      const results = await TMDBService.searchMovies(query, page);
 
       res.json({
         success: true,
@@ -126,15 +110,16 @@ export class MoviesController {
     }
   }
 
-  /**
-   * Get popular movies
-   */
   async getPopularMovies(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { page = 1 } = req.query;
-      const pageNumber = parseInt(page as string, 10) || 1;
+      const validation = validateGetPopularMovies(req.query);
+      if ('errors' in validation) {
+        res.status(400).json({ errors: validation.errors });
+        return;
+      }
+      const { page } = validation.data;
 
-      const results = await TMDBService.getPopularMovies(pageNumber);
+      const results = await TMDBService.getPopularMovies(page);
 
       res.json({
         success: true,
@@ -146,15 +131,16 @@ export class MoviesController {
     }
   }
 
-  /**
-   * Get top rated movies
-   */
   async getTopRatedMovies(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { page = 1 } = req.query;
-      const pageNumber = parseInt(page as string, 10) || 1;
+      const validation = validateGetTopRatedMovies(req.query);
+      if ('errors' in validation) {
+        res.status(400).json({ errors: validation.errors });
+        return;
+      }
+      const { page } = validation.data;
 
-      const results = await TMDBService.getTopRatedMovies(pageNumber);
+      const results = await TMDBService.getTopRatedMovies(page);
 
       res.json({
         success: true,
@@ -166,15 +152,16 @@ export class MoviesController {
     }
   }
 
-  /**
-   * Get now playing movies
-   */
   async getNowPlayingMovies(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { page = 1 } = req.query;
-      const pageNumber = parseInt(page as string, 10) || 1;
+      const validation = validateGetNowPlayingMovies(req.query);
+      if ('errors' in validation) {
+        res.status(400).json({ errors: validation.errors });
+        return;
+      }
+      const { page } = validation.data;
 
-      const results = await TMDBService.getNowPlayingMovies(pageNumber);
+      const results = await TMDBService.getNowPlayingMovies(page);
 
       res.json({
         success: true,
@@ -186,15 +173,16 @@ export class MoviesController {
     }
   }
 
-  /**
-   * Get upcoming movies
-   */
   async getUpcomingMovies(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { page = 1 } = req.query;
-      const pageNumber = parseInt(page as string, 10) || 1;
+      const validation = validateGetUpcomingMovies(req.query);
+      if ('errors' in validation) {
+        res.status(400).json({ errors: validation.errors });
+        return;
+      }
+      const { page } = validation.data;
 
-      const results = await TMDBService.getUpcomingMovies(pageNumber);
+      const results = await TMDBService.getUpcomingMovies(page);
 
       res.json({
         success: true,
@@ -206,29 +194,16 @@ export class MoviesController {
     }
   }
 
-  /**
-   * Get movie details by ID
-   */
   async getMovieDetails(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { id } = req.params;
-
-      if (!id) {
-        res.status(400).json({
-          error: 'Movie ID is required'
-        });
+      const validation = validateGetMovieDetails(req.params);
+      if ('errors' in validation) {
+        res.status(400).json({ errors: validation.errors });
         return;
       }
+      const { id } = validation.data;
 
-      const movieId = parseInt(id, 10);
-      if (isNaN(movieId)) {
-        res.status(400).json({
-          error: 'Invalid movie ID'
-        });
-        return;
-      }
-
-      const movie = await TMDBService.getMovieDetails(movieId);
+      const movie = await TMDBService.getMovieDetails(id);
 
       res.json({
         success: true,
@@ -240,29 +215,16 @@ export class MoviesController {
     }
   }
 
-  /**
-   * Get movie images
-   */
   async getMovieImages(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { id } = req.params;
-
-      if (!id) {
-        res.status(400).json({
-          error: 'Movie ID is required'
-        });
+      const validation = validateGetMovieImages(req.params);
+      if ('errors' in validation) {
+        res.status(400).json({ errors: validation.errors });
         return;
       }
+      const { id } = validation.data;
 
-      const movieId = parseInt(id, 10);
-      if (isNaN(movieId)) {
-        res.status(400).json({
-          error: 'Invalid movie ID'
-        });
-        return;
-      }
-
-      const images = await TMDBService.getMovieImages(movieId);
+      const images = await TMDBService.getMovieImages(id);
 
       res.json({
         success: true,
@@ -274,29 +236,16 @@ export class MoviesController {
     }
   }
 
-  /**
-   * Get movie credits (cast and crew)
-   */
   async getMovieCredits(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { id } = req.params;
-
-      if (!id) {
-        res.status(400).json({
-          error: 'Movie ID is required'
-        });
+      const validation = validateGetMovieCredits(req.params);
+      if ('errors' in validation) {
+        res.status(400).json({ errors: validation.errors });
         return;
       }
+      const { id } = validation.data;
 
-      const movieId = parseInt(id, 10);
-      if (isNaN(movieId)) {
-        res.status(400).json({
-          error: 'Invalid movie ID'
-        });
-        return;
-      }
-
-      const credits = await TMDBService.getMovieCredits(movieId);
+      const credits = await TMDBService.getMovieCredits(id);
 
       res.json({
         success: true,
@@ -308,31 +257,16 @@ export class MoviesController {
     }
   }
 
-  /**
-   * Get similar movies
-   */
   async getSimilarMovies(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { id } = req.params;
-      const { page = 1 } = req.query;
-
-      if (!id) {
-        res.status(400).json({
-          error: 'Movie ID is required'
-        });
+      const validation = validateGetSimilarMovies({ ...req.params, ...req.query });
+      if ('errors' in validation) {
+        res.status(400).json({ errors: validation.errors });
         return;
       }
+      const { id, page } = validation.data;
 
-      const movieId = parseInt(id, 10);
-      if (isNaN(movieId)) {
-        res.status(400).json({
-          error: 'Invalid movie ID'
-        });
-        return;
-      }
-
-      const pageNumber = parseInt(page as string, 10) || 1;
-      const results = await TMDBService.getSimilarMovies(movieId, pageNumber);
+      const results = await TMDBService.getSimilarMovies(id, page);
 
       res.json({
         success: true,
@@ -344,31 +278,16 @@ export class MoviesController {
     }
   }
 
-  /**
-   * Get movie recommendations
-   */
   async getMovieRecommendations(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { id } = req.params;
-      const { page = 1 } = req.query;
-
-      if (!id) {
-        res.status(400).json({
-          error: 'Movie ID is required'
-        });
+      const validation = validateGetMovieRecommendations({ ...req.params, ...req.query });
+      if ('errors' in validation) {
+        res.status(400).json({ errors: validation.errors });
         return;
       }
+      const { id, page } = validation.data;
 
-      const movieId = parseInt(id, 10);
-      if (isNaN(movieId)) {
-        res.status(400).json({
-          error: 'Invalid movie ID'
-        });
-        return;
-      }
-
-      const pageNumber = parseInt(page as string, 10) || 1;
-      const results = await TMDBService.getMovieRecommendations(movieId, pageNumber);
+      const results = await TMDBService.getMovieRecommendations(id, page);
 
       res.json({
         success: true,
@@ -380,9 +299,6 @@ export class MoviesController {
     }
   }
 
-  /**
-   * Get movie genres
-   */
   async getGenres(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const genres = await TMDBService.getGenres();
