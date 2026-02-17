@@ -115,6 +115,10 @@ This home server application provides a centralized platform for entertainment a
 
 ## Features
 
+### Card Library Module
+- 🔍 **Card Search**: Search Scryfall for cards to add to your library
+- 📚 **Personal Library**: View and manage your card collection with persistent storage
+
 ### Movie Library Module
 - 🔍 **Movie Search**: Search The Movie Database (TMDB) for movies to add to your library
 - 📚 **Personal Library**: View and manage your movie collection with persistent storage
@@ -138,6 +142,8 @@ This home server application provides a centralized platform for entertainment a
 The backend provides a RESTful API with modular endpoints for different features:
 
 ### Cards Module
+- `GET    /api/cards/library` - Get user's card library
+- `POST   /api/cards/library` - Update library card count
 - `GET    /api/cards/sets` - Get Scryfall MTG sets
 - `GET    /api/cards/sets/:set_id/cards` - Get Scryfall MTG card data by set
 - `GET    /api/cards/:scryfall_card_id` - Get Scryfall MTG card data by id
@@ -151,12 +157,12 @@ The backend provides a RESTful API with modular endpoints for different features
 - `GET    /api/movies/popular` - Get popular movies
 - `GET    /api/movies/top-rated` - Get top rated movies
 - `GET    /api/movies/upcoming` - Get upcoming movie releases
+- `GET    /api/movies/genres/list` - Get available movie genres
 - `GET    /api/movies/:id` - Get detailed movie information
 - `GET    /api/movies/:id/credits` - Get movie cast and crew
 - `GET    /api/movies/:id/images` - Get movie logos and posters
 - `GET    /api/movies/:id/recommendations` - Get recommended movies
 - `GET    /api/movies/:id/similar` - Get similar movies
-- `GET    /api/movies/genres/list` - Get available movie genres
 
 ### Extensible Design
 The API is designed with modularity in mind. New features and modules can be added by:
@@ -167,6 +173,7 @@ The API is designed with modularity in mind. New features and modules can be add
 ## Database Schema
 
 The application uses MySQL with the following main tables:
+- `card` - Card information
 - `movie` - Movie information
 - `movie_genres` - Genre definitions
 - `movie_has_genre` - Many-to-many relationship between movies and genres
