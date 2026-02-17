@@ -19,6 +19,7 @@ A full-stack home server application featuring a movie library and basic games. 
 - **TypeScript**
 - **MySQL** database
 - **TMDB API** integration
+- **Scryfall API** integration
 
 ## Project Structure
 
@@ -136,21 +137,26 @@ This home server application provides a centralized platform for entertainment a
 
 The backend provides a RESTful API with modular endpoints for different features:
 
+### Cards Module
+- `GET    /api/cards/sets` - Get Scryfall MTG sets
+- `GET    /api/cards/sets/:set_id/cards` - Get Scryfall MTG card data by set
+- `GET    /api/cards/:scryfall_card_id` - Get Scryfall MTG card data by id
+
 ### Movies Module
-- `GET /api/movies/library` - Get user's movie library
-- `POST /api/movies/library` - Add movie to library
+- `GET    /api/movies/library` - Get user's movie library
+- `POST   /api/movies/library` - Add movie to library
 - `DELETE /api/movies/library/:id` - Remove movie from library
-- `GET /api/movies/search?q=query` - Search TMDB movies
-- `GET /api/movies/now-playing` - Get movies in theaters
-- `GET /api/movies/popular` - Get popular movies
-- `GET /api/movies/top-rated` - Get top rated movies
-- `GET /api/movies/upcoming` - Get upcoming movie releases
-- `GET /api/movies/:id` - Get detailed movie information
-- `GET /api/movies/:id/credits` - Get movie cast and crew
-- `GET /api/movies/:id/images` - Get movie logos and posters
-- `GET /api/movies/:id/recommendations` - Get recommended movies
-- `GET /api/movies/:id/similar` - Get similar movies
-- `GET /api/movies/genres/list` - Get available movie genres
+- `GET    /api/movies/search?q=query` - Search TMDB movies
+- `GET    /api/movies/now-playing` - Get movies in theaters
+- `GET    /api/movies/popular` - Get popular movies
+- `GET    /api/movies/top-rated` - Get top rated movies
+- `GET    /api/movies/upcoming` - Get upcoming movie releases
+- `GET    /api/movies/:id` - Get detailed movie information
+- `GET    /api/movies/:id/credits` - Get movie cast and crew
+- `GET    /api/movies/:id/images` - Get movie logos and posters
+- `GET    /api/movies/:id/recommendations` - Get recommended movies
+- `GET    /api/movies/:id/similar` - Get similar movies
+- `GET    /api/movies/genres/list` - Get available movie genres
 
 ### Extensible Design
 The API is designed with modularity in mind. New features and modules can be added by:

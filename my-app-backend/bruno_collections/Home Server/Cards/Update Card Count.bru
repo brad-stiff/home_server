@@ -1,0 +1,19 @@
+meta {
+  name: Update Card Count
+  type: http
+  seq: 4
+}
+
+post {
+  url: http://localhost:3001/api/cards/library
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "scryfall_id": "95318d85-4a08-47ac-a43d-ea83c0bea81c",
+    "count": 1,
+    "is_foil": false
+  }
+}

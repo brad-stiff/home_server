@@ -117,3 +117,16 @@ CREATE TABLE IF NOT EXISTS movie (
   INDEX idx_active (active),
   INDEX idx_added_at (added_at)
 );
+
+-- Card table for card library
+CREATE TABLE card (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  scryfall_id CHAR(36) NOT NULL,
+  scryfall_data JSON NOT NULL,
+  name VARCHAR(255) NOT NULL,
+  non_foil_count SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  foil_count SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  PRIMARY KEY (id),
+  UNIQUE KEY (scryfall_id),
+  INDEX idx_name (name)
+);
