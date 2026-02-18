@@ -25,7 +25,7 @@ A full-stack home server application featuring a movie library and basic games. 
 
 ```
 /
-├── my-app/                 # React Native frontend (Expo)
+├── frontend-mobile/        # React Native frontend (Expo)
 │   ├── app/
 │   │   ├── (tabs)/         # App screens/tabs
 │   │   │   ├── movies.tsx      # Movie library interface
@@ -36,7 +36,7 @@ A full-stack home server application featuring a movie library and basic games. 
 │   ├── types/              # Typescript object definitions
 │   ├── utils/              # Helper functions and utilities
 │   └── ...
-├── my-app-backend/         # Node.js backend server
+├── backend/                # Node.js backend server
 │   ├── bruno_collections   # Api request collections for testing
 │   ├── src/
 │   │   ├── config/         # App configuration files
@@ -69,7 +69,7 @@ This home server application provides a centralized platform for entertainment a
 
 1. **Navigate to backend directory:**
    ```bash
-   cd my-app-backend
+   cd backend
    ```
 
 2. **Install dependencies:**
@@ -96,7 +96,7 @@ This home server application provides a centralized platform for entertainment a
 
 1. **Navigate to frontend directory:**
    ```bash
-   cd my-app
+   cd frontend-mobile
    ```
 
 2. **Install dependencies:**
