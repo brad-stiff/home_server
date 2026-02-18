@@ -9,7 +9,7 @@ A full-stack home server application featuring a movie library and basic games. 
 
 ## Tech Stack
 
-### Frontend
+### Frontend Mobile
 - **React Native** with Expo
 - **TypeScript**
 - **React Navigation** for routing
@@ -92,7 +92,7 @@ This home server application provides a centralized platform for entertainment a
    npm run dev
    ```
 
-### Frontend Setup
+### Frontend Mobile Setup
 
 1. **Navigate to frontend directory:**
    ```bash
