@@ -1,0 +1,35 @@
+.nav {
+  position: fixed; /* stays at the top */
+  top: 0;
+  left: 0;
+  width: 100%; /* full width */
+  z-index: 1000; /* stays above page content */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1.5rem;
+  background: #1e1e1e;
+  color: white;
+  box-sizing: border-box;
+}
+
+.nav-logo {
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.nav-links {
+  display: flex;
+  gap: 1.25rem;
+  list-style: none;
+}
+
+.nav-links a {
+  color: white;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.nav-links a:hover {
+  text-decoration: underline;
+}
