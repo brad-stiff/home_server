@@ -1,0 +1,64 @@
+/* CardDetailModal.css */
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 5000;
+  }
+
+  .modal-content {
+    background: #1e1e1e;
+    padding: 20px;
+    border-radius: 12px;
+    width: 420px;
+    max-height: 90vh;
+    overflow-y: auto;
+    color: white;
+    box-shadow: 0 0 20px rgba(0,0,0,0.4);
+  }
+
+  .modal-card-img {
+    width: 100%;
+    border-radius: 8px;
+    margin-bottom: 16px;
+  }
+
+  .oracle-text {
+    white-space: pre-line;
+    margin-top: 12px;
+  }
+
+  .close-btn {
+    margin-top: 20px;
+    width: 100%;
+    padding: 10px;
+    background: #444;
+    border: none;
+    border-radius: 8px;
+    color: white;
+    cursor: pointer;
+  }
+
+  .face-toggle {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .face-toggle button {
+    flex: 1;
+    padding: 8px;
+    background: #333;
+    border: none;
+    border-radius: 6px;
+    color: white;
+    cursor: pointer;
+  }
+
+  .face-toggle button.active {
+    background: #666;
+  }
