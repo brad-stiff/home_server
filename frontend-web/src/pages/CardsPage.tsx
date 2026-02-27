@@ -68,8 +68,6 @@ export function CardsPage() {
 
   return (
     <div className="cards-container">
-      <h1>Cards</h1>
-
       <div className='set-scroll'>
         {card_sets.map(set => (
           <div
