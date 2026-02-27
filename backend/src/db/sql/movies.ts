@@ -1,6 +1,6 @@
 import { selectQuery } from "../util";
 import { get } from "../../loaders/mysql";
-import type { Movie, MovieInsertRequest } from "../../../../core/types/movie";
+import type { Movie, MovieInsertRequest } from "@core/types/movie";
 
 export async function getMovies() {
   const results = await selectQuery<Movie & { genre_ids?: number[] }>(`

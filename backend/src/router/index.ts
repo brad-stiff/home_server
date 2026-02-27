@@ -1,9 +1,10 @@
-import { Router } from 'express';
+import express from "express";
+
 import userRouter from './routes/user';
 import moviesRouter from './routes/movies';
 import cardsRouter from './routes/cards';
 
-const router = Router();
+const router = express.Router();
 
 router.use('/users', userRouter);
 router.use('/movies', moviesRouter);

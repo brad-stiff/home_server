@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import type { UserLoginRequest } from "../../../../core/types/user";
+import type { UserLoginRequest } from "@core/types/user";
+import { formatZodErrors } from "@core/utils/helpers";
 
 // Zod schemas
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -34,14 +35,6 @@ const passwordUpdateSchema = z.object({
   current_password: z.string().min(1, 'Current password is required'),
   new_password: z.string().min(8, 'New password must be at least 8 characters'),
 });
-
-// Helper function to convert Zod errors to our format
-function formatZodErrors(error: z.ZodError): string[] {
-  return error.issues.map((err) => {
-    const path = err.path.length > 0 ? `${err.path.join('.')}: ` : '';
-    return `${path}${err.message}`;
-  });
-}
 
 export function validateRegister(body: unknown): { data: UserLoginRequest } | { errors: string[] } {
   const result = registerSchema.safeParse(body);

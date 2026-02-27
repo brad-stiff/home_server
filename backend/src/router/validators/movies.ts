@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { formatZodErrors } from "@core/utils/helpers";
 
 const addToLibrarySchema = z.object({
   tmdb_id: z.number().int().positive(),
@@ -145,11 +146,4 @@ export function validateGetUpcomingMovies(query: unknown): { data: { page: numbe
     return { errors: formatZodErrors(result.error) };
   }
   return { data: result.data };
-}
-
-function formatZodErrors(error: z.ZodError): string[] {
-  return error.issues.map((err) => {
-    const path = err.path.length > 0 ? `${err.path.join('.')}: ` : '';
-    return `${path}${err.message}`;
-  });
 }

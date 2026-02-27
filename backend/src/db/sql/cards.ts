@@ -1,5 +1,5 @@
 import { selectQuery, modifyQuery } from "../util";
-import type { Card, CardRequest } from "../../../../core/types/card";
+import type { Card, CardRequest } from "@core/types/card";
 
 export async function getCard(id: number) {
   const result = await getCards({ ids: [id] });

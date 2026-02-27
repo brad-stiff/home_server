@@ -1,10 +1,10 @@
-import { Router } from 'express';
+import express from "express";
 
 import { authenticateToken } from '../middleware/auth';
 
 import userController from '../controllers/user';
 
-const router = Router();
+const router = express.Router();
 
 router.get('/me', authenticateToken, userController.getMe);
 

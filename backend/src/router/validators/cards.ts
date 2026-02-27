@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import type { UpdateCardCountRequest } from '../../../../core/types/card';
+import type { UpdateCardCountRequest } from '@core/types/card';
+import { formatZodErrors } from "@core/utils/helpers";
 
 const cardsBySetSchema = z.object({
   set_code: z.string().min(3)
@@ -37,11 +38,4 @@ export function validateUpdateCardCount(body: unknown): { data: UpdateCardCountR
     return { errors: formatZodErrors(result.error) };
   }
   return { data: result.data };
-}
-
-function formatZodErrors(error: z.ZodError): string[] {
-  return error.issues.map((err) => {
-    const path = err.path.length > 0 ? `${err.path.join('.')}: ` : '';
-    return `${path}${err.message}`;
-  });
 }

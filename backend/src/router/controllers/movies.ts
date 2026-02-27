@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import TMDBService from '../../services/tmdb';
 import db from '../../db';
-import type { MovieInsertRequest } from '../../../../core/types/movie';
+import type { MovieInsertRequest } from '@core/types/movie';
 import {
   validateAddToLibrary,
   validateRemoveFromLibrary,

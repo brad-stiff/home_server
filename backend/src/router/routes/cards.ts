@@ -1,7 +1,7 @@
-import { Router } from 'express';
+import express from "express";
 import cardsController from '../controllers/cards';
 
-const router = Router();
+const router = express.Router();
 
 router.get('/sets', cardsController.getSets);
 

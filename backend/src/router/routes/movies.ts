@@ -1,7 +1,7 @@
-import { Router } from 'express';
+import express from "express";
 import moviesController from '../controllers/movies';
 
-const router = Router();
+const router = express.Router();
 
 // User movie library endpoints
 router.get('/library', moviesController.getUserLibrary);

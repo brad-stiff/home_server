@@ -1,0 +1,9 @@
+{
+  "name": "@core",
+  "version": "1.0.0",
+  "type": "commonjs",
+  "main": "index.ts",
+  "dependencies": {
+    "zod": "^4.3.6"
+  }
+}
