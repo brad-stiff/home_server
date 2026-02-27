@@ -4,4 +4,6 @@
   align-items: center;
   padding-top: 80px;
   box-sizing: border-box;
+
+  height: calc(100vh - 80px);
 }
