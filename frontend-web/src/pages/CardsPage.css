@@ -1,6 +1,113 @@
 .cards-container {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  height: calc(100vh - 70px);
+  flex-direction: column;
+
+  height: calc(100vh - 80px);
 }
+
+.set-scroll {
+  width: 90%;
+  margin: 0 auto;
+  display: flex;
+  overflow-x: auto;
+  gap: 1rem;
+  padding: 1rem 0;
+  scrollbar-width: thin;
+}
+
+.set-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.set-wrapper:hover .tooltip {
+  opacity: 1;
+}
+
+.set-icon {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.set-icon:hover {
+  transform: scale(1.2);
+}
+
+.set-icon.selected {
+  transform: scale(1.25);
+  filter: drop-shadow(0 0 8px #646cff);
+}
+
+.tooltip {
+  position: absolute;
+  bottom: 110%; /* above the icon */
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1a1a1a;
+  color: white;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  white-space: nowrap;
+  font-size: 0.85rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  z-index: 10;
+}
+
+.tooltip-floating {
+  position: fixed;
+  background: #1a1a1a;
+  color: white;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 9999;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  font-size: 0.85rem;
+}
+
+.card-binder {
+  display: flex;
+  margin-top: 2rem;
+  gap: 2rem;
+}
+
+.binder-left,
+.binder-right {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-auto-rows: 150px;
+  gap: 1rem;
+  width: 50%;
+}
+
+.card-slot {
+  background: #222;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-slot img {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.graph-placeholder {
+  width: 100%;
+  height: 100%;
+  background: #333;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
