@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import './CardDetailModal.css';
+import type { MTGCard } from '../../../core/types/card';
 
 type CardDetailModalProps = {
-  card: any; // TODO: update type
+  card: MTGCard;
   onClose: () => void;
 }
 

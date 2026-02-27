@@ -24,18 +24,7 @@ A full-stack home server application featuring a movie library and basic games. 
 ## Project Structure
 
 ```
-/
-├── frontend-mobile/        # React Native frontend (Expo)
-│   ├── app/
-│   │   ├── (tabs)/         # App screens/tabs
-│   │   │   ├── movies.tsx      # Movie library interface
-│   │   │   └── games.tsx       # Games interface
-│   ├── components/         # Reusable UI components
-│   ├── context/            # Global app context
-│   ├── services/           # API services
-│   ├── types/              # Typescript object definitions
-│   ├── utils/              # Helper functions and utilities
-│   └── ...
+home-server/
 ├── backend/                # Node.js backend server
 │   ├── bruno_collections   # Api request collections for testing
 │   ├── src/
@@ -49,8 +38,24 @@ A full-stack home server application featuring a movie library and basic games. 
 │   │   │   ├── middleware/     # Auth, validation, rate limiting, etc.
 │   │   │   ├── routes/         # Route definitions
 │   │   │   └── validators/     # Request validation schemas
-│   │   ├── services/       # External service integrations
-│   │   └── types/          # Typescript object definitions
+│   │   └── services/       # External service integrations
+│   └── ...
+├── core/                   # App shared utilities
+│   ├── types/              # Typescript object definitions
+│   └── ...
+├── frontend-mobile/        # React Native frontend (Expo)
+│   ├── app/
+│   │   ├── (tabs)/         # App screens/tabs
+│   │   │   ├── movies.tsx      # Movie library interface
+│   │   │   └── games.tsx       # Games interface
+│   ├── components/         # Reusable UI components
+│   ├── context/            # Global app context
+│   ├── services/           # API services
+│   ├── types/              # Typescript object definitions
+│   ├── utils/              # Helper functions and utilities
+│   └── ...
+├── frontend-web/           # React frontend (Vite)
+│   ├── TBD - Work In Progress
 │   └── ...
 └── README.md
 ```

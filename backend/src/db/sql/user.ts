@@ -4,7 +4,7 @@ import type {
   UserRequest,
   UserLevel,
   UserRegisterRequest
-} from "../../types/user"
+} from "../../../../core/types/user";
 
 export function getUser(id: number) {
   return selectQuery<User>(`

@@ -1,11 +1,12 @@
 import { api } from "./http";
+import type { CardSetResponse, SetResponse } from "../../../core/types/card";
 
 // TODO: update type
 export function getSets() {
-  return api<any>("/api/cards/sets")
+  return api<SetResponse>("/api/cards/sets")
 }
 
 // TODO: update type
 export function getSetCards(set_code: string) {
-  return api<any>(`/api/cards/sets/${set_code}/cards`)
+  return api<CardSetResponse>(`/api/cards/sets/${set_code}/cards`)
 }

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { UpdateCardCountRequest } from '../../types/card';
+import type { UpdateCardCountRequest } from '../../../../core/types/card';
 
 const cardsBySetSchema = z.object({
   set_code: z.string().min(3)

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { UserLoginRequest } from "types/user";
+import type { UserLoginRequest } from "../../../../core/types/user";
 
 // Zod schemas
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

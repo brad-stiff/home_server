@@ -5,7 +5,7 @@ import type {
   SetCardsResponse,
   MTGCard,
   CardSetResponse
-} from '../types/card'
+} from '../../../core/types/card';
 
 const SCRYFALL_BASE_URL = 'https://api.scryfall.com';
 
