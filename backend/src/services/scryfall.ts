@@ -26,7 +26,7 @@ class ScryfallService {
 
   async getCardsBySet(set_code: string): Promise<CardSetResponse> {
     try {
-      let url = `/cards/search?q=set:${set_code}&order=collector&dir=asc`; //this extra stuff did nothing
+      let url = `/cards/search?q=set:${set_code}&order=collector&dir=asc`;
       let has_more = true;
       let set_card_count = 0;
       let set_cards: MTGCard[] = [];
