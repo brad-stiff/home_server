@@ -9,9 +9,13 @@ type CardDetailModalProps = {
 }
 
 export function CardDetailModal({ card, onClose }: CardDetailModalProps) {
-  const [faceIndex, setFaceIndex] = useState(0);
+  const [face_index, setFaceIndex] = useState(0);
 
-  const face = card.card_faces?.[faceIndex] ?? card;
+  const has_card_faces = !!card.card_faces;
+  const is_shared_card_face = card.layout === 'split';
+
+  const card_image_uris = !is_shared_card_face && !!card.card_faces ? card.card_faces[face_index].image_uris! : card.image_uris;
+  const card_face = card.card_faces?.[face_index] ?? card;
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
@@ -22,23 +26,26 @@ export function CardDetailModal({ card, onClose }: CardDetailModalProps) {
   return createPortal(
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <h2>{face.name}</h2>
+        <h2>{card.name}</h2>
 
-        {face.image_uris?.normal && (
+        {card_image_uris.normal && (
           <img
+            src={card_image_uris.normal}
+            alt={card_face.name}
             className="modal-card-img"
-            src={face.image_uris.normal}
-            alt={face.name}
           />
         )}
 
         <div className="modal-details">
-          <p><strong>Type:</strong> {face.type_line}</p>
-          {face.mana_cost && (
-            <p><strong>Mana Cost:</strong> {face.mana_cost}</p>
+          {has_card_faces && (
+            <p><strong>Name:</strong> {card_face.name}</p>
           )}
-          {face.oracle_text && (
-            <p className="oracle-text">{face.oracle_text}</p>
+          <p><strong>Type:</strong> {card_face.type_line}</p>
+          {card_face.mana_cost && (
+            <p><strong>Mana Cost:</strong> {card_face.mana_cost}</p>
+          )}
+          {card_face.oracle_text && (
+            <p className="oracle-text">{card_face.oracle_text}</p>
           )}
         </div>
 
@@ -46,15 +53,15 @@ export function CardDetailModal({ card, onClose }: CardDetailModalProps) {
           <div className="face-toggle">
             <button
               onClick={() => setFaceIndex(0)}
-              className={faceIndex === 0 ? "active" : ""}
+              className={face_index === 0 ? "active" : ""}
             >
-              Front
+              {is_shared_card_face ? "Left" : "Front"}
             </button>
             <button
               onClick={() => setFaceIndex(1)}
-              className={faceIndex === 1 ? "active" : ""}
+              className={face_index === 1 ? "active" : ""}
             >
-              Back
+              {is_shared_card_face ? "Right" : "Back"}
             </button>
           </div>
         )}

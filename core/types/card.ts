@@ -181,7 +181,7 @@ export type MTGCard = {
     cardmarket: string
     cardhoarder: string
   }
-  card_faces?: []
+  card_faces?: MTGCardFace[]
 }
 
 export type MTGCardImageUris = {
@@ -196,14 +196,14 @@ export type MTGCardImageUris = {
 export type MTGCardFace = {
   artist: string
   artist_id: string
-  colors: MTGCardColors[]
   illustration_id: string
-  image_uris: MTGCardImageUris
   mana_cost: string
   name: string
   object: string
   oracle_text: string
   type_line: string
+  colors?: MTGCardColors[]
+  image_uris?: MTGCardImageUris
 }
 
 export type SetCardsResponse = {
