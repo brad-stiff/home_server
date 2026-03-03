@@ -4,18 +4,20 @@ import './CardsPage.css'
 import { getSets, getSetCards } from '../api/cards';
 import { TooltipPortal } from '../components/TooltipPortal';
 import { CardDetailModal } from '../components/CardDetailModal';
+import type { MTGCard, MTGSet } from '../../../core/types/card';
+import { MTGCardTile } from '../components/MTGCardTile/MTGCardTile';
 
 export function CardsPage() {
-  const [card_sets, setCardSets] = useState([]);
-  const [selected_card_set_code, setSelectedCardSetCode] = useState(null);
-  const [selected_card_set_cards, setSelectedCardSetCards] = useState([]);
+  const [card_sets, setCardSets] = useState<MTGSet[]>([]);
+  const [selected_card_set_code, setSelectedCardSetCode] = useState<string | null>(null);
+  const [selected_card_set_cards, setSelectedCardSetCards] = useState<MTGCard[]>([]);
 
-  const [hovered_set, setHoveredSet] = useState(null);
+  const [hovered_set, setHoveredSet] = useState<MTGSet | null>(null);
   const [mouse_pos, setMousePos] = useState({ x: 0, y: 0 });
 
   const [page, setPage] = useState(1);
 
-  const [selected_card_for_popup, setSelectedCardForPopup] = useState(null);
+  const [selected_card_for_popup, setSelectedCardForPopup] = useState<MTGCard | null>(null);
 
 
   useEffect(() => {
@@ -23,7 +25,7 @@ export function CardsPage() {
       const sorted_sets = [...sets_data.data].sort((a, b) => {
         if (!a.released_at) return 1;
         if (!b.released_at) return -1;
-        return new Date(b.released_at) - new Date(a.released_at);
+        return new Date(b.released_at).getTime() - new Date(a.released_at).getTime();
       });
 
       setCardSets(sorted_sets);
@@ -109,26 +111,22 @@ export function CardsPage() {
                 <div className='graph-placeholder'>Graph Data Here</div>
               ) : (
                 left.map(card => (
-                  <div
+                  <MTGCardTile
                     key={card.id}
-                    className='card-slot'
-                    onClick={() => setSelectedCardForPopup(card)}
-                  >
-                    <img src={card.image_uris?.small} alt={card.name} />
-                  </div>
+                    card={card}
+                    onClick={setSelectedCardForPopup}
+                  />
                 ))
               )}
             </div>
 
             <div className='binder-right'>
               {right.map(card => (
-                <div
+                <MTGCardTile
                   key={card.id}
-                  className="card-slot"
-                  onClick={() => setSelectedCardForPopup(card)}
-                >
-                  <img src={card.image_uris?.small} alt={card.name} />
-                </div>
+                  card={card}
+                  onClick={setSelectedCardForPopup}
+                />
               ))}
             </div>
           </div>
