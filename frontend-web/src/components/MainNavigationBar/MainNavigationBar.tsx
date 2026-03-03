@@ -1,12 +1,12 @@
 import { Link } from "react-router-dom";
-import "./MainNavigationBar.css";
+import scoped_style from "./MainNavigationBar.module.css";
 
 export function MainNavigationBar() {
   return (
-    <nav className="nav">
-      <div className="nav-logo">Home Server</div>
+    <nav className={scoped_style["nav"]}>
+      <div className={scoped_style["nav-logo"]}>Home Server</div>
 
-      <ul className="nav-links">
+      <ul className={scoped_style["nav-links"]}>
         <li><Link to="/">Home</Link></li>
         <li><Link to="/cards">Cards</Link></li>
         <li><Link to="/movies">Movies</Link></li>

@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
-import './CardsPage.css'
+import scoped_style from "./CardsPage.module.css";
 
-import { getSets, getSetCards } from '../api/cards';
-import { TooltipPortal } from '../components/TooltipPortal';
-import { CardDetailModal } from '../components/CardDetailModal';
-import type { MTGCard, MTGSet } from '../../../core/types/card';
-import { MTGCardTile } from '../components/MTGCardTile/MTGCardTile';
+import { getSets, getSetCards } from '../../api/cards';
+import { TooltipPortal } from '../../components/TooltipPortal/TooltipPortal';
+import { CardDetailModal } from '../../components/CardDetailModal/CardDetailModal';
+import type { MTGCard, MTGSet } from '../../../../core/types/card';
+import { MTGCardTile } from '../../components/MTGCardTile/MTGCardTile';
 
 export function CardsPage() {
   const [card_sets, setCardSets] = useState<MTGSet[]>([]);
@@ -63,12 +63,12 @@ export function CardsPage() {
   const total_pages = Math.ceil((selected_card_set_cards.length - 9) / 18) + 1;
 
   return (
-    <div className="cards-container">
-      <div className='set-scroll'>
+    <div className={scoped_style["cards-container"]}>
+      <div className={scoped_style["set-scroll"]}>
         {card_sets.map(set => (
           <div
             key={set.code}
-            className='set-wrapper'
+            className={scoped_style["set-wrapper"]}
             onMouseEnter={() => setHoveredSet(set)}
             onMouseLeave={() => setHoveredSet(null)}
             onMouseMove={(e) => setMousePos({ x: e.clientX, y: e.clientY })}
@@ -78,8 +78,8 @@ export function CardsPage() {
               alt={set.name}
               className={
                 selected_card_set_code === set.code
-                  ? "set-icon selected"
-                  : "set-icon"
+                  ? `${scoped_style["set-icon"]} selected`
+                  : scoped_style["set-icon"]
               }
               onClick={() => setSelectedCardSetCode(set.code)}
             />
@@ -90,7 +90,7 @@ export function CardsPage() {
       {hovered_set && (
         <TooltipPortal>
           <div
-            className='tooltip-floating'
+            className={scoped_style["tooltip-floating"]}
             style={{
               top: mouse_pos.y + 10,
               left: mouse_pos.x + 10
@@ -105,10 +105,10 @@ export function CardsPage() {
 
       {selected_card_set_cards.length > 0 && (
         <>
-          <div className='card-binder'>
-            <div className='binder-left'>
+          <div className={scoped_style["card-binder"]}>
+            <div className={scoped_style["binder-left"]}>
               {page === 1 ? (
-                <div className='graph-placeholder'>Graph Data Here</div>
+                <div className={scoped_style["graph-placeholder"]}>Graph Data Here</div>
               ) : (
                 left.map(card => (
                   <MTGCardTile
@@ -120,7 +120,7 @@ export function CardsPage() {
               )}
             </div>
 
-            <div className='binder-right'>
+            <div className={scoped_style["binder-right"]}>
               {right.map(card => (
                 <MTGCardTile
                   key={card.id}
@@ -131,7 +131,7 @@ export function CardsPage() {
             </div>
           </div>
 
-          <div className='card-pagination'>
+          <div className={scoped_style["card-pagination"]}>
             <button disabled={page === 1} onClick={() => setPage(page - 1)}>
               Prev
             </button>
