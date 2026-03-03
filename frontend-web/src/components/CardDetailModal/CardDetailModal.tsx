@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import './CardDetailModal.css';
-import type { MTGCard } from '../../../core/types/card';
+import scoped_style from './CardDetailModal.module.css';
+import type { MTGCard } from '../../../../core/types/card';
 
 type CardDetailModalProps = {
   card: MTGCard;
@@ -24,19 +24,19 @@ export function CardDetailModal({ card, onClose }: CardDetailModalProps) {
   }, [onClose]);
 
   return createPortal(
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+    <div className={scoped_style["modal-overlay"]} onClick={onClose}>
+      <div className={scoped_style["modal-content"]} onClick={(e) => e.stopPropagation()}>
         <h2>{card.name}</h2>
 
         {card_image_uris.normal && (
           <img
             src={card_image_uris.normal}
             alt={card_face.name}
-            className="modal-card-img"
+            className={scoped_style["modal-card-img"]}
           />
         )}
 
-        <div className="modal-details">
+        <div className={scoped_style["modal-details"]}>
           {has_card_faces && (
             <p><strong>Name:</strong> {card_face.name}</p>
           )}
@@ -45,12 +45,12 @@ export function CardDetailModal({ card, onClose }: CardDetailModalProps) {
             <p><strong>Mana Cost:</strong> {card_face.mana_cost}</p>
           )}
           {card_face.oracle_text && (
-            <p className="oracle-text">{card_face.oracle_text}</p>
+            <p className={scoped_style["oracle-text"]}>{card_face.oracle_text}</p>
           )}
         </div>
 
         {card.card_faces?.length === 2 && (
-          <div className="face-toggle">
+          <div className={scoped_style["face-toggle"]}>
             <button
               onClick={() => setFaceIndex(0)}
               className={face_index === 0 ? "active" : ""}
@@ -66,7 +66,7 @@ export function CardDetailModal({ card, onClose }: CardDetailModalProps) {
           </div>
         )}
 
-        <button className="close-btn" onClick={onClose}>Close</button>
+        <button className={scoped_style["close-btn"]} onClick={onClose}>Close</button>
       </div>
     </div>,
     document.body

@@ -1,9 +1,9 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { MainNavigationBar } from "./components/MainNavigationBar";
-import { HomePage } from './pages/HomePage';
-import { CardsPage } from './pages/CardsPage';
-import { MoviesPage } from "./pages/MoviesPage";
-import { GamesPage } from "./pages/GamesPage";
+import { MainNavigationBar } from "./components/MainNavigationBar/MainNavigationBar";
+import { HomePage } from './pages/HomePage/HomePage';
+import { CardsPage } from './pages/CardsPage/CardsPage';
+import { MoviesPage } from "./pages/MoviesPage/MoviesPage";
+import { GamesPage } from "./pages/GamesPage/GamesPage";
 
 function App() {
   return (
