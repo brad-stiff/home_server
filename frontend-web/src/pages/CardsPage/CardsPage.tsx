@@ -78,7 +78,7 @@ export function CardsPage() {
               alt={set.name}
               className={
                 selected_card_set_code === set.code
-                  ? `${scoped_style["set-icon"]} selected`
+                  ? `${scoped_style["set-icon"]} ${scoped_style["selected"]}`
                   : scoped_style["set-icon"]
               }
               onClick={() => setSelectedCardSetCode(set.code)}
