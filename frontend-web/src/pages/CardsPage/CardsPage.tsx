@@ -1,10 +1,14 @@
 import { useEffect, useState } from 'react';
+import toast, { Toaster } from 'react-hot-toast';
+
 import scoped_style from "./CardsPage.module.css";
 
+import type { MTGCard, MTGSet } from '../../../../core/types/card';
+
 import { getSets, getSetCards } from '../../api/cards';
+
 import { TooltipPortal } from '../../components/TooltipPortal/TooltipPortal';
 import { CardDetailModal } from '../../components/CardDetailModal/CardDetailModal';
-import type { MTGCard, MTGSet } from '../../../../core/types/card';
 import { MTGCardTile } from '../../components/MTGCardTile/MTGCardTile';
 
 export function CardsPage() {
@@ -18,6 +22,8 @@ export function CardsPage() {
   const [page, setPage] = useState(1);
 
   const [selected_card_for_popup, setSelectedCardForPopup] = useState<MTGCard | null>(null);
+
+  const showSetError = () => toast.error("Failed to load set");
 
 
   useEffect(() => {
@@ -39,6 +45,9 @@ export function CardsPage() {
 
     getSetCards(selected_card_set_code).then((set_card_data) => {
       setSelectedCardSetCards(set_card_data.cards);
+    }).catch((error) =>{
+      console.error(error);
+      showSetError();
     })
 
   }, [selected_card_set_code])
@@ -64,6 +73,7 @@ export function CardsPage() {
 
   return (
     <div className={scoped_style["cards-container"]}>
+      <Toaster />
       <div className={scoped_style["set-scroll"]}>
         {card_sets.map(set => (
           <div
