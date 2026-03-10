@@ -53,13 +53,13 @@ export function CardDetailModal({ card, onClose }: CardDetailModalProps) {
           <div className={scoped_style["face-toggle"]}>
             <button
               onClick={() => setFaceIndex(0)}
-              className={face_index === 0 ? "active" : ""}
+              className={face_index === 0 ? `${scoped_style["active"]}` : ""}
             >
               {is_shared_card_face ? "Left" : "Front"}
             </button>
             <button
               onClick={() => setFaceIndex(1)}
-              className={face_index === 1 ? "active" : ""}
+              className={face_index === 1 ? `${scoped_style["active"]}` : ""}
             >
               {is_shared_card_face ? "Right" : "Back"}
             </button>
