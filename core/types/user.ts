@@ -33,3 +33,13 @@ export type UserLoginRequest = {
   email: string
   password: string
 }
+
+export type UserRefreshToken = {
+  id: string
+  user_id: number
+  token_hash: string
+  created_at: Date
+  expires_at: Date
+  revoked_at: Date | null
+  replaced_by: string | null
+}

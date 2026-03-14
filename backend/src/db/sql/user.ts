@@ -3,7 +3,8 @@ import type {
   User,
   UserRequest,
   UserLevel,
-  UserRegisterRequest
+  UserRegisterRequest,
+  UserRefreshToken
 } from "@core/types/user";
 
 export function getUser(id: number) {
@@ -169,4 +170,99 @@ export function getUserLevels() {
     FROM
       user_level ul;
   `);
+}
+
+export function insertUserRefreshToken(refresh_token: {
+  id: string;
+  user_id: number;
+  token_hash: string;
+  expires_at: Date;
+}) {
+  return modifyQuery(
+    `
+    INSERT INTO user_refresh_token (
+      id,
+      user_id,
+      token_hash,
+      expires_at
+    ) VALUES (
+      ?,
+      ?,
+      ?,
+      ?
+    )
+  `,
+    [
+      refresh_token.id,
+      refresh_token.user_id,
+      refresh_token.token_hash,
+      refresh_token.expires_at,
+    ]
+  );
+}
+
+export function getUserRefreshTokenById(id: string) {
+  return selectQuery<UserRefreshToken>(
+    `
+    SELECT
+      id,
+      user_id,
+      token_hash,
+      created_at,
+      expires_at,
+      revoked_at,
+      replaced_by
+    FROM
+      user_refresh_token
+    WHERE
+      id = ?;
+  `,
+    [id]
+  );
+}
+
+export function revokeUserRefreshToken(id: string) {
+  return modifyQuery(
+    `
+    UPDATE user_refresh_token
+    SET
+      revoked_at = NOW()
+    WHERE
+      id = ?
+      AND revoked_at IS NULL
+  `,
+    [id]
+  );
+}
+
+export function revokeUserRefreshTokenAndSetReplacedBy(params: {
+  id: string;
+  replaced_by: string;
+}) {
+  return modifyQuery(
+    `
+    UPDATE user_refresh_token
+    SET
+      revoked_at = NOW(),
+      replaced_by = ?
+    WHERE
+      id = ?
+      AND revoked_at IS NULL
+  `,
+    [params.replaced_by, params.id]
+  );
+}
+
+export function revokeAllUserRefreshTokensForUser(user_id: number) {
+  return modifyQuery(
+    `
+    UPDATE user_refresh_token
+    SET
+      revoked_at = NOW()
+    WHERE
+      user_id = ?
+      AND revoked_at IS NULL
+  `,
+    [user_id]
+  );
 }

@@ -12,9 +12,10 @@ const API_ENDPOINTS = {
   },
   USERS: {
     ME: `${API_BASE_URL}/users/me`,
-    REGISTER: ``,
+    REGISTER: `${API_BASE_URL}/users/register`,
     LOGIN: `${API_BASE_URL}/users/login`,
-    LOGOUT: ``
+    LOGOUT: `${API_BASE_URL}/users/logout`,
+    REFRESH: `${API_BASE_URL}/users/refresh-token`,
   }
 } as const;
 
@@ -68,13 +69,47 @@ class ApiService {
   }
 
   //user
-  static async login(email: string, password: string): Promise<ApiResponse<{messages: string[]}>> {
+  static async login(email: string, password: string): Promise<{
+    messages: string[];
+    access_token: string;
+    refresh_token: string;
+  }> {
     return this.request(API_ENDPOINTS.USERS.LOGIN, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ email: email, password: password})
+    }) as Promise<{
+      messages: string[];
+      access_token: string;
+      refresh_token: string;
+    }>;
+  }
+
+  static async refreshToken(refreshToken: string): Promise<{
+    access_token: string;
+    refresh_token: string;
+  }> {
+    return this.request(API_ENDPOINTS.USERS.REFRESH, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ refresh_token: refreshToken }),
+    }) as Promise<{
+      access_token: string;
+      refresh_token: string;
+    }>;
+  }
+
+  static async logout(refreshToken: string): Promise<void> {
+    await this.request(API_ENDPOINTS.USERS.LOGOUT, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ refresh_token: refreshToken }),
     });
   }
 }

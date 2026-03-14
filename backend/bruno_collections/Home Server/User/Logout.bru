@@ -1,0 +1,17 @@
+meta {
+  name: Logout
+  type: http
+  seq: 6
+}
+
+post {
+  url: http://localhost:3001/api/users/logout
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "refresh_token": "{{refresh_token}}"
+  }
+}

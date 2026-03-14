@@ -98,6 +98,30 @@ CREATE TABLE IF NOT EXISTS user (
   INDEX idx_created_at (created_at)
 );
 
+-- User refresh tokens
+CREATE TABLE user_refresh_token (
+  id CHAR(36) NOT NULL,
+  user_id INT NOT NULL,
+  token_hash VARCHAR(255) NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  expires_at DATETIME NOT NULL,
+  revoked_at DATETIME NULL,
+  replaced_by CHAR(36) NULL,
+
+  PRIMARY KEY (id),
+
+  CONSTRAINT fk_refresh_user
+    FOREIGN KEY (user_id) REFERENCES user(id)
+    ON DELETE CASCADE,
+
+  CONSTRAINT fk_user_refresh_replaced_by
+    FOREIGN KEY (replaced_by) REFERENCES user_refresh_token(id)
+    ON DELETE SET NULL
+);
+
+CREATE INDEX idx_user_refresh_token_hash ON user_refresh_token(token_hash);
+CREATE INDEX idx_user_refresh_user_id ON user_refresh_token(user_id);
+
 -- Movie table for movie library
 CREATE TABLE IF NOT EXISTS movie (
   id INT AUTO_INCREMENT PRIMARY KEY,

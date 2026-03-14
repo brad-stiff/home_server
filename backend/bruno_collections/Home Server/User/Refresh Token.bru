@@ -1,26 +1,24 @@
 meta {
-  name: Login
+  name: Refresh Token
   type: http
-  seq: 4
+  seq: 5
 }
 
 post {
-  url: {{base_url}}/api/users/login
+  url: http://localhost:3001/api/users/refresh-token
   body: json
   auth: none
 }
 
 body:json {
   {
-    "email": "test@account.com",
-    "password": "testtest"
+    "refresh_token": "{{refresh_token}}"
   }
 }
 
-tests {
-  // Parse JSON response and capture access & refresh tokens into env vars
+script:post-response {
   const body = res.body;
-
+  
   if (body && typeof body === "object") {
     if (body.access_token) {
       bru.setEnvVar("auth_token", body.access_token);
@@ -38,7 +36,7 @@ tests {
         bru.setEnvVar("refresh_token", json.refresh_token);
       }
     } catch (e) {
-      // ignore parse errors; no vars will be updated
+      // ignore parse errors
     }
   }
 }

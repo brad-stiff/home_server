@@ -20,8 +20,8 @@ router.post('/register', userController.register);
 
 router.post('/login', userController.login);
 
-//logout
-//FUTURE - will be needed when implementing refresh tokens
+router.post('/refresh-token', userController.refreshToken);
+router.post('/logout', userController.logout);
 
 router.get('/:id', userController.getUser);
 

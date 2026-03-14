@@ -3,28 +3,56 @@ import { Platform } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const TOKEN_KEY = 'jwt';
+const ACCESS_TOKEN_KEY = 'access_token';
+const REFRESH_TOKEN_KEY = 'refresh_token';
 
-export async function saveToken(token: string) {
+type StoredTokens = {
+  access_token: string | null;
+  refresh_token: string | null;
+};
+
+async function setItem(key: string, value: string | null) {
   if (Platform.OS === 'web') {
-    await AsyncStorage.setItem(TOKEN_KEY, token);
+    if (value === null) {
+      await AsyncStorage.removeItem(key);
+    } else {
+      await AsyncStorage.setItem(key, value);
+    }
   } else {
-    await SecureStore.setItemAsync(TOKEN_KEY, token);
+    if (value === null) {
+      await SecureStore.deleteItemAsync(key);
+    } else {
+      await SecureStore.setItemAsync(key, value);
+    }
   }
 }
 
-export async function loadToken() {
+async function getItem(key: string): Promise<string | null> {
   if (Platform.OS === 'web') {
-    return AsyncStorage.getItem(TOKEN_KEY);
+    return AsyncStorage.getItem(key);
   } else {
-    return SecureStore.getItemAsync(TOKEN_KEY);
+    return SecureStore.getItemAsync(key);
   }
 }
 
-export async function deleteToken() {
-  if (Platform.OS === 'web') {
-    await AsyncStorage.removeItem(TOKEN_KEY);
-  } else {
-    await SecureStore.deleteItemAsync(TOKEN_KEY);
-  }
+export async function saveTokens(access_token: string, refresh_token: string) {
+  await setItem(ACCESS_TOKEN_KEY, access_token);
+  await setItem(REFRESH_TOKEN_KEY, refresh_token);
+}
+
+export async function loadTokens(): Promise<StoredTokens> {
+  const [access_token, refresh_token] = await Promise.all([
+    getItem(ACCESS_TOKEN_KEY),
+    getItem(REFRESH_TOKEN_KEY),
+  ]);
+
+  return {
+    access_token,
+    refresh_token,
+  };
+}
+
+export async function deleteTokens() {
+  await setItem(ACCESS_TOKEN_KEY, null);
+  await setItem(REFRESH_TOKEN_KEY, null);
 }

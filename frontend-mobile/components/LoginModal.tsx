@@ -10,14 +10,18 @@ export default function LoginModal() {
   const [password, setPassword] = useState('');
 
   async function handleLogin() {
-    // Replace with your real API call
-    //const fakeToken = 'jwt-token-example';
     const login_response = await ApiService.login(email, password);
-    console.log(login_response);
-    const token: string = login_response.messages[1];
+    console.log('login_response', login_response);
 
-    console.log('token', token);
-    await login(token);
+    const access_token = login_response.access_token;
+    const refresh_token = login_response.refresh_token;
+
+    if (!access_token || !refresh_token) {
+      console.error('Missing tokens in login response');
+      return;
+    }
+
+    await login(access_token, refresh_token);
   }
 
   return (
